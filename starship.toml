@@ -1,0 +1,43 @@
+# Use the color palette
+palette = "dracula"
+[aws]
+style = "bold orange"
+
+[character]
+error_symbol = "[❯](bold red)"
+success_symbol = "[❯](bold green)"
+vicmd_symbol = "[❯](bold cyan)" 
+
+[cmd_duration]
+style = "bold yellow"
+
+[directory]
+style = "bold green"
+truncation_length = 3  # Show only 2 levels of the directory
+truncation_symbol = "…/"  # Ellipsis for truncated paths
+
+[git_branch]
+style = "bold pink"
+
+[git_status]
+style = "bold red"
+
+[hostname]
+style = "bold purple"
+
+[username]
+format = "[$user]($style) on "
+style_user = "bold cyan"
+
+[palettes.dracula]
+background = "#0B0D0F"
+current_line = "#44475a"
+foreground = "#F8F8F2"
+comment = "#708CA9"
+cyan = "#80FFEA"
+green = "#8AFF80"
+orange = "#FFCA80"
+pink = "#FF80BF"
+purple = "#FF80BF"
+red = "#FF9580"
+yellow = "#FFFF80"

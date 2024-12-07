@@ -1,0 +1,18 @@
+{
+  zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/prezto/zcompdump"
+  if [[ -s "$zcompdump" && (! -s "${zcompdump}.zwc" || "$zcompdump" -nt "${zcompdump}.zwc") ]]; then
+    if command mkdir "${zcompdump}.zwc.lock" 2>/dev/null; then
+      zcompile "$zcompdump"
+      command rmdir  "${zcompdump}.zwc.lock" 2>/dev/null
+    fi
+  fi
+} &!
+
+if [[ -o INTERACTIVE && -t 2 ]]; then
+
+  if (( $+commands[fortune] )); then
+    fortune -s
+    print
+  fi
+
+fi >&2

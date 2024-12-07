@@ -1,0 +1,12 @@
+zstyle ':prezto:module:prompt' theme 'pure'
+
+zstyle ':prezto:*:*' color 'yes'
+
+zstyle ':prezto:load' pmodule \
+  'history' \
+  'directory' \
+  'utility' \
+  'completion' \
+  'syntax-highlighting' \
+  'history-substring-search' \
+  'autosuggestions' \
