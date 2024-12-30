@@ -2,13 +2,16 @@
 
 -- Set leader key
 vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 
 -- General settings
 vim.o.number = true -- Show line numbers
 vim.o.relativenumber = true -- Relative line numbers
 vim.o.expandtab = true -- Use spaces instead of tabs
+vim.opt.shiftround = true
 vim.o.shiftwidth = 2 -- Size of an indent
 vim.o.tabstop = 2 -- Number of spaces tabs count for
+vim.opt.sidescrolloff = 8
 vim.o.smartindent = true -- Auto-indent new lines
 vim.o.wrap = false -- Disable line wrapping
 vim.opt.termguicolors = true -- Enable true colors
@@ -34,6 +37,7 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 vim.opt.conceallevel = 3
+vim.opt.confirm = true
 
 vim.opt.smartindent = true
 vim.opt.splitkeep = "screen"
@@ -49,3 +53,28 @@ vim.opt.showtabline = 1
 vim.opt.ruler = false
 vim.opt.showmode = false
 vim.opt.laststatus = 3
+
+-- Decrease update time
+vim.opt.updatetime = 300
+
+-- Decrease mapped sequence wait time
+vim.opt.timeoutlen = 500
+
+-- Time in milliseconds to wait for a key code sequence to complete
+vim.opt.ttimeoutlen = 0
+
+-- A comma-separated list of options for Insert mode completion
+vim.opt.completeopt = "menu,menuone,noselect"
+
+-- Don't start comment line before/after prev line
+vim.opt.formatoptions = vim.opt.formatoptions - "c" - "r" - "o"
+
+-- Program and format to use for the :grep
+vim.opt.grepformat = "%f:%l:%c:%m"
+vim.opt.grepprg = "rg --vimgrep"
+
+-- Don't show partial off-screen results in a preview window
+vim.opt.inccommand = "nosplit"
+
+-- Push the command line prompt to the bottom
+vim.opt.cmdheight = 0

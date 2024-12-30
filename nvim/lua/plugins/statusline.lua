@@ -47,6 +47,7 @@ return {
 				globalstatus = true,
 				section_separators = { left = "", right = "" },
 				component_separators = { left = "", right = "" },
+				disabled_filetypes = { "starter", "TelescopePrompt" },
 			},
 			sections = {
 				lualine_a = { "mode" },
@@ -65,7 +66,7 @@ return {
 				lualine_z = {},
 			},
 			tabline = {},
-			extensions = {},
+			extensions = { "quickfix", "lazy", "mason", "oil", "nvim-dap-ui" },
 		})
 	end,
 }

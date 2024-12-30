@@ -1,11 +1,12 @@
 # Use the color palette
 palette = "dracula"
-[aws]
-style = "bold orange"
+add_newline = true
+command_timeout = 2000
+
 
 [character]
-error_symbol = "[❯](bold red)"
 success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
 vicmd_symbol = "[❯](bold cyan)" 
 
 [cmd_duration]

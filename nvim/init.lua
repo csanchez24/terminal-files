@@ -21,6 +21,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	-- Simple plugins
 	"tpope/vim-sleuth",
+	{ "windwp/nvim-autopairs", config = true }, -- Auto-pairs
 	{ "windwp/nvim-ts-autotag", event = "BufRead", opts = {} },
 	{
 		"folke/todo-comments.nvim",
@@ -28,9 +29,6 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
 	},
-
-	{ "lewis6991/gitsigns.nvim" }, -- Git signs
-	{ "windwp/nvim-autopairs", config = true }, -- Auto-pairs
 
 	-- Complex plugins (referencing separate files)
 	{ import = "plugins" },
