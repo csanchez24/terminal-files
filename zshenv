@@ -8,7 +8,15 @@ export EDITOR="nvim"
 export VISUAL="nvim"
 export PAGER="less"
 
+export PATH="$PATH:/opt/homebrew/opt/llvm/bin"
+export PATH="$PATH:/opt/homebrew/bin/"
+export PATH="$PATH:$HOME/.composer/vendor/bin"
+export PATH="$PATH:$HOME/.cargo/bin"
+export PATH=$PATH:$HOME/go/bin/
+export PATH="${HOME}/.pyenv/shims:${PATH}"
+
 
 if [[ ( "$SHLVL" -eq 1 && ! -o LOGIN ) && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
 fi
+. "$HOME/.cargo/env"

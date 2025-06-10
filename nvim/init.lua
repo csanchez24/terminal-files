@@ -29,6 +29,16 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
 	},
+	{
+		"olexsmir/gopher.nvim",
+		ft = "go",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
+			"mfussenegger/nvim-dap",
+		},
+		opts = {},
+	},
 
 	-- Complex plugins (referencing separate files)
 	{ import = "plugins" },
