@@ -6,7 +6,7 @@
 
 return {
 	"neovim/nvim-lspconfig", -- Main LSP configuration plugin
-	event = "BufRead", -- Load after a buffer is read
+	event = "BufReadPre", -- Load after a buffer is read
 
 	dependencies = {
 		{ "mason-org/mason.nvim", opts = {} }, -- Install and manage external LSPs/tools
