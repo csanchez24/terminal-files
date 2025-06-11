@@ -1,198 +1,96 @@
-local M = {}
+-- Autocompletion setup using blink.cmp for Neovim
+-- https://github.com/hrsh7th/nvim-cmp (wrapper: saghen/blink.cmp)
 
-M.icons = setmetatable({
-	Array = " ",
-	Boolean = "󰨙 ",
-	Class = " ",
-	Codeium = "󰘦 ",
-	Color = " ",
-	Control = " ",
-	Collapsed = " ",
-	Constant = "󰏿 ",
-	Constructor = " ",
-	Copilot = " ",
-	Enum = " ",
-	EnumMember = " ",
-	Event = " ",
-	Field = " ",
-	File = " ",
-	Folder = " ",
-	Function = "󰊕 ",
-	Interface = " ",
-	Key = " ",
-	Keyword = " ",
-	Method = "󰊕 ",
-	Module = " ",
-	Namespace = "󰦮 ",
-	Null = " ",
-	Number = "󰎠 ",
-	Object = " ",
-	Operator = " ",
-	Package = " ",
-	Property = " ",
-	Reference = " ",
-	Snippet = " ",
-	String = " ",
-	Struct = "󰆼 ",
-	TabNine = "󰏚 ",
-	Text = " ",
-	TypeParameter = " ",
-	Unit = " ",
-	Value = " ",
-	Variable = "󰀫 ",
-}, {})
-
----@param entry cmp.Entry
----@param vim_item vim.CompletedItem
----@return vim.CompletedItem
----@diagnostic disable-next-line: unused-local
-M.set_format = function(entry, vim_item)
-	if M.icons[vim_item.kind] then
-		vim_item.kind = M.icons[vim_item.kind] .. vim_item.kind
+-- Custom sort function to prioritize completion sources
+local sort_source = function(a, b)
+	-- Define priority: LSP highest, then snippets, git, path, buffer, lazydev lowest
+	local order = { lsp = 6, snippets = 5, git = 4, path = 3, buffer = 2, lazydev = 1 }
+	local a_order_id = order[a.source_id]
+	local b_order_id = order[b.source_id]
+	-- If priorities differ, return the higher-priority source first
+	if a_order_id ~= b_order_id then
+		return a_order_id > b_order_id
 	end
-	return vim_item
+	-- Otherwise, leave equal sources in their default order
 end
 
 return {
-	"hrsh7th/nvim-cmp",
-	version = false,
-	event = "InsertEnter",
+	-- Core completion plugin (blink.cmp wrapper)
+	"saghen/blink.cmp",
+	event = "VimEnter", -- Load on startup completion
+	version = "1.*", -- Use any 1.x version
+
 	dependencies = {
-		-- Snippet Engine & its associated nvim-cmp source
+		-- Snippet engine: LuaSnip
 		{
 			"L3MON4D3/LuaSnip",
+			version = "2.*",
 			build = (function()
-				-- Build Step is needed for regex support in snippets.
-				-- This step is not supported in many windows environments.
-				-- Remove the below condition to re-enable on windows.
+				-- Attempt to build jsregexp for advanced snippet regex support
 				if vim.fn.has("win32") == 1 or vim.fn.executable("make") == 0 then
-					return
+					return -- Skip on Windows or if 'make' is unavailable
 				end
 				return "make install_jsregexp"
 			end)(),
 			dependencies = {
-				-- `friendly-snippets` contains a variety of premade snippets.
-				--  See the README about individual language/framework/plugin snippets:
-				--  https://github.com/rafamadriz/friendly-snippets
+				-- Pre-made snippet collection for many languages/frameworks
 				{
 					"rafamadriz/friendly-snippets",
 					config = function()
+						-- Lazy-load VSCode-format snippets
 						require("luasnip.loaders.from_vscode").lazy_load()
 					end,
 				},
 			},
-			opts = {
-				history = true,
-				delete_check_events = "TextChanged",
-			},
-			keys = {
-				{
-					"<tab>",
-					function()
-						require("luasnip").jump(1)
-					end,
-					mode = "s",
-				},
-				{
-					"<s-tab>",
-					function()
-						require("luasnip").jump(-1)
-					end,
-					mode = { "i", "s" },
-				},
+			opts = {}, -- Default LuaSnip options
+		},
+
+		-- Adds fuzzy-file/source search info for blink
+		"folke/lazydev.nvim",
+	},
+
+	--- @module 'blink.cmp'
+	--- @type blink.cmp.Config
+	opts = {
+		keymap = {
+			preset = "default",
+			-- 'default' mapping:
+			--   <C-y> to confirm, <Tab>/<S-Tab> to jump snippets, <C-Space> to open menu, etc.
+		},
+
+		appearance = {
+			nerd_font_variant = "mono", -- Use mono Nerd Font for aligned icons
+		},
+
+		completion = {
+			documentation = {
+				auto_show = true, -- Don’t pop up docs immediately
+				auto_show_delay_ms = 500, -- Delay before showing docs if enabled
 			},
 		},
-		-- Integrates L3MON4D3/LuaSnip with nvim-cmp. It servers as `L3MON4D3/LuaSnip` cmp source
-		"saadparwaiz1/cmp_luasnip",
 
-		-- Adds other completion capabilities.
-		-- nvim-cmp does not ship with all sources by default. They are split
-		-- into multiple repos for maintenance purposes.
-		"hrsh7th/cmp-nvim-lsp",
-		"hrsh7th/cmp-path",
+		sources = {
+			default = { "lsp", "path", "snippets", "lazydev" }, -- Load these in order
+			providers = {
+				lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
+			},
+		},
+
+		snippets = {
+			preset = "luasnip", -- Use LuaSnip as snippet backend
+		},
+
+		fuzzy = {
+			implementation = "lua", -- Use Lua fuzzy matcher by default
+			sorts = {
+				sort_source, -- First sort by our custom priority
+				"score", -- Then by builtin score
+				"sort_text", -- Finally by text
+			},
+		},
+
+		signature = {
+			enabled = true, -- Show signature help while typing function args
+		},
 	},
-	config = function()
-		-- Set highlight color for nvim-cmp experimental ghost_text
-		vim.api.nvim_set_hl(0, "CmpGhostText", { link = "Comment", default = true })
-
-		-- See `:help cmp`
-		local cmp = require("cmp")
-		local luasnip = require("luasnip")
-		luasnip.config.setup({})
-
-		cmp.setup({
-			completion = {
-				completeopt = "menu,menuone,noinsert",
-			},
-			snippet = {
-				expand = function(args)
-					luasnip.lsp_expand(args.body)
-				end,
-			},
-			-- For an understanding of why these mappings were
-			-- chosen, you will need to read `:help ins-completion`
-			--
-			-- No, but seriously. Please read `:help ins-completion`, it is really good!
-			mapping = cmp.mapping.preset.insert({
-				-- Select the [n]ext item
-				-- Select the [p]revious item
-				["<C-n>"] = cmp.mapping.select_next_item(),
-				["<C-p>"] = cmp.mapping.select_prev_item(),
-
-				-- Scroll the documentation window [b]ack / [f]orward
-				["<C-b>"] = cmp.mapping.scroll_docs(-4),
-				["<C-f>"] = cmp.mapping.scroll_docs(4),
-
-				-- Accept ([y]es) the completion.
-				-- This will auto-import if your LSP supports it.
-				-- This will expand snippets if the LSP sent a snippet.
-				["<C-y>"] = cmp.mapping.confirm({ select = true }),
-
-				-- If you prefer more traditional completion keymaps,
-				-- you can uncomment the following lines
-				-- ['<CR>'] = cmp.mapping.confirm { select = true },
-				-- ['<Tab>'] = cmp.mapping.select_next_item(),
-				-- ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-
-				-- Manually trigger a completion from nvim-cmp.
-				-- Generally you don't need this, because nvim-cmp will display
-				-- completions whenever it has completion options available.
-				["<C-Space>"] = cmp.mapping.complete({}),
-
-				-- Think of <c-l> as moving to the right of your snippet expansion.
-				-- So if you have a snippet that's like:
-				-- function $name($args)
-				--   $body
-				-- end
-				--
-				-- <c-l> will move you to the right of each of the expansion locations.
-				-- <c-h> is similar, except moving you backwards.
-				["<C-l>"] = cmp.mapping(function()
-					if luasnip.expand_or_locally_jumpable() then
-						luasnip.expand_or_jump()
-					end
-				end, { "i", "s" }),
-				["<C-h>"] = cmp.mapping(function()
-					if luasnip.locally_jumpable(-1) then
-						luasnip.jump(-1)
-					end
-				end, { "i", "s" }),
-			}),
-			sources = {
-				{ name = "nvim_lsp" },
-				{ name = "luasnip" },
-				{ name = "path" },
-			},
-			formatting = {
-				expandable_indicator = true,
-				fields = { "menu", "abbr", "kind" },
-				format = M.set_format,
-			},
-			experimental = {
-				ghost_text = {
-					hl_group = "CmpGhostText",
-				},
-			},
-		})
-	end,
 }

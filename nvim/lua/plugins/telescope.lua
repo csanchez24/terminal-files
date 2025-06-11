@@ -1,81 +1,66 @@
--- lua/plugins/telescope.lua
+-- Telescope.nvim: Fuzzy finder for files, LSP, help tags, and more
+-- https://github.com/nvim-telescope/telescope.nvim
 
 return {
-	"nvim-telescope/telescope.nvim",
-	event = "VimEnter",
-	branch = "0.1.x",
+	"nvim-telescope/telescope.nvim", -- Core Telescope plugin
+	event = "VimEnter", -- Load on Neovim startup
+	branch = "0.1.x", -- Use stable 0.1.x branch
 	dependencies = {
-		"nvim-lua/plenary.nvim",
+		"nvim-lua/plenary.nvim", -- Utility functions required by Telescope
+
+		-- FZF-native extension for faster sorting (optional)
 		{
-			-- If encountering errors, see telescope-fzf-native README for installation instructions
 			"nvim-telescope/telescope-fzf-native.nvim",
-			-- `build` is used to run some command when the plugin is installed/updated.
-			-- This is only run then, not every time Neovim starts up.
-			build = "make",
-			-- `cond` is a condition used to determine whether this plugin should be installed and loaded.
-			cond = function()
+			build = "make", -- Compile native C code on install/update
+			cond = function() -- Only load if 'make' is available
 				return vim.fn.executable("make") == 1
 			end,
 		},
-		-- Sets vim.ui.select to telescope. That means for example that neovim core stuff can fill the
-		-- telescope picker. Example would be lua vim.lsp.buf.code_action()
+
+		-- Replace vim.ui.select with Telescope-based picker for consistency
 		{ "nvim-telescope/telescope-ui-select.nvim" },
-		-- Browser extension for telescope.nvim. It supports synchronized creation, deletion, renaming,
-		-- and moving of files and folders powered
+
+		-- File browser extension: browse/create/rename/move files inside Telescope
 		{
 			"nvim-telescope/telescope-file-browser.nvim",
 			build = "make",
 			enabled = vim.fn.executable("make") == 1,
 		},
 	},
+
 	config = function()
-		-- Telescope is a fuzzy finder that comes with a lot of different things that
-		-- it can fuzzy find! It's more than just a "file finder", it can search
-		-- many different aspects of Neovim, your workspace, LSP, and more!
-		--
-		-- The easiest way to use Telescope, is to start by doing something like:
-		--  :Telescope help_tags
-		--
-		-- After running this command, a window will open up and you're able to
-		-- type in the prompt window. You'll see a list of `help_tags` options and
-		-- a corresponding preview of the help.
-		--
-		-- Two important keymaps to use while in Telescope are:
-		--  - Insert mode: <c-/>
-		--  - Normal mode: ?
-		--
-		-- This opens a window that shows you all of the keymaps for the current
-		-- Telescope picker. This is really useful to discover what Telescope can
-		-- do as well as how to actually do it!
-
-		-- [[ Configure Telescope ]]
-		-- See `:help telescope` and `:help telescope.setup()`
-
-		-- See `:help telescope.actions`
+		-- Import Telescope actions for mappings & custom behaviors
 		local actions = require("telescope.actions")
 
-		-- Add selection to quickfix list and open it
+		-- Custom function: send selected entries to quickfix list and open it
 		local send_selected_to_qflist = function(prompt_bufnr, mode, target)
 			actions.send_selected_to_qflist(prompt_bufnr, mode, target)
 			actions.open_qflist(0)
 		end
 
+		-- Setup Telescope with default options
 		require("telescope").setup({
-			-- You can put your default mappings / updates / etc. in here
-			-- All the info you're looking for is in `:help telescope.setup()`
 			defaults = {
-				layout_config = { prompt_position = "top", preview_cutoff = 0 },
-				prompt_prefix = "  ",
-				selection_caret = "  ",
-				selection_strategy = "reset",
-				sorting_strategy = "ascending",
-				winblend = 0,
-				borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
-				layout_strategy = "horizontal",
-				scroll_strategy = "cycle",
-				file_ignore_patterns = { "node_modules/.*", ".git/.*", "yarn.lock", "\\.next/.*" },
-				-- open files in the first window that is an actual file.
-				-- use the current window if no other window is available.
+				prompt_prefix = "  ", -- Prefix before input prompt
+				selection_caret = "  ", -- Marker for selected item
+				layout_strategy = "horizontal", -- Horizontal split layout
+				layout_config = {
+					prompt_position = "top", -- Prompt at top of window
+					preview_cutoff = 200, -- Hide preview if cols < 200
+				},
+				sorting_strategy = "ascending", -- Oldest results at top
+				selection_strategy = "reset", -- Reset selection on new search
+				winblend = 0, -- No transparency
+				borderchars = { " ", " ", " ", " ", " ", " ", " ", " " }, -- No borders
+				scroll_strategy = "cycle", -- Cycle over results
+				file_ignore_patterns = { -- Exclude common dirs/files
+					"node_modules/.*",
+					".git/.*",
+					"yarn.lock",
+					"\\.next/.*",
+				},
+
+				-- Open selection in first non-special window (or current)
 				get_selection_window = function()
 					local wins = vim.api.nvim_list_wins()
 					table.insert(wins, 1, vim.api.nvim_get_current_win())
@@ -87,63 +72,61 @@ return {
 					end
 					return 0
 				end,
+
+				-- Key mappings for insert (i) and normal (n) modes in Telescope prompt
 				mappings = {
 					i = {
-						["<C-s>"] = actions.select_horizontal,
-						["œ"] = send_selected_to_qflist,
+						["<C-s>"] = actions.select_horizontal, -- Open in horizontal split
+						["œ"] = send_selected_to_qflist, -- Add to quickfix list
 					},
 					n = {
-						["q"] = actions.close,
-						["œ"] = send_selected_to_qflist,
+						["q"] = actions.close, -- Close Telescope window
+						["œ"] = send_selected_to_qflist, -- Add to quickfix list
 					},
 				},
 			},
 		})
 
-		-- Enable Telescope extensions if they are installed
+		-- Load installed Telescope extensions safely
 		pcall(require("telescope").load_extension, "fzf")
 		pcall(require("telescope").load_extension, "ui-select")
 		pcall(require("telescope").load_extension, "file_browser")
 
-		-- See `:help telescope.builtin`
+		-- Shortcut to Telescope builtins
 		local builtin = require("telescope.builtin")
+		vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "Search Help Tags" })
+		vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "Search Keymaps" })
+		vim.keymap.set("n", "<leader>sf", builtin.find_files, { desc = "Find Files" })
+		vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "Telescope Builtins" })
+		vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "Search Current Word" })
+		vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "Live Grep" })
+		vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "Search Diagnostics" })
+		vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "Resume Last Picker" })
+		vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = "Recent Files" })
+		vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "Open Buffers" })
 
-		vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
-		vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
-		vim.keymap.set("n", "<leader>sf", builtin.find_files, { desc = "[S]earch [F]iles" })
-		vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
-		vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
-		vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "[S]earch by [G]rep" })
-		vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "[S]earch [D]iagnostics" })
-		vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "[S]earch [R]esume" })
-		vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-		vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "[ ] Find existing buffers" })
-		vim.keymap.set("n", "<leader>sE", ":Telescope file_browser<CR>", { desc = "[S]earch file browser" })
+		-- File browser keymaps
+		vim.keymap.set("n", "<leader>sE", ":Telescope file_browser<CR>", { desc = "File Browser" })
 		vim.keymap.set(
 			"n",
 			"<leader>se",
 			":Telescope file_browser path=%:p:h select_buffer=true<CR>",
-			{ desc = "[S]earch file browser" }
+			{ desc = "File Browser (cwd)" }
 		)
 
-		-- Slightly advanced example of overriding default behavior and theme
+		-- Fuzzy search in current buffer
 		vim.keymap.set("n", "<leader>/", function()
-			-- You can pass additional configuration to Telescope to change the theme, layout, etc.
 			builtin.current_buffer_fuzzy_find()
-		end, { desc = "[/] Fuzzily search in current buffer" })
+		end, { desc = "Fuzzy Find in Buffer" })
 
-		-- It's also possible to pass additional configuration options.
-		--  See `:help telescope.builtin.live_grep()` for information about particular keys
+		-- Live grep only open files
 		vim.keymap.set("n", "<leader>s/", function()
-			builtin.live_grep({
-				grep_open_files = true,
-				prompt_title = "Live Grep in Open Files",
-			})
-		end, { desc = "[S]earch [/] in Open Files" })
+			builtin.live_grep({ grep_open_files = true, prompt_title = "Grep Open Files" })
+		end, { desc = "Live Grep Open Files" })
 
-		-- Shortcut for searching your Neovim configuration files
+		-- Shortcut to search Neovim config directory
 		vim.keymap.set("n", "<leader>sn", function()
 			builtin.find_files({ cwd = vim.fn.stdpath("config") })
-		end, { desc = "[S]earch [N]eovim files" })
+		end, { desc = "Search Neovim Config" })
 	end,
 }

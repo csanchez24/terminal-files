@@ -1,80 +1,73 @@
--- lua/settings.lua
+-- lua/config/settings.lua
 
--- Set leader key
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
+-- Leader keys
+vim.g.mapleader = " " -- Set the global leader key to Space
+vim.g.maplocalleader = "\\" -- Set the local leader key to backslash
 
--- General settings
-vim.o.number = true -- Show line numbers
-vim.o.relativenumber = true -- Relative line numbers
+-- Line numbering
+vim.o.number = true -- Show absolute line numbers
+vim.o.relativenumber = true -- Show line numbers relative to the cursor
+
+-- Indentation
 vim.o.expandtab = true -- Use spaces instead of tabs
-vim.opt.shiftround = true
-vim.o.shiftwidth = 2 -- Size of an indent
-vim.o.tabstop = 2 -- Number of spaces tabs count for
-vim.opt.sidescrolloff = 8
-vim.o.smartindent = true -- Auto-indent new lines
+vim.o.shiftwidth = 2 -- Number of spaces to use for each step of (auto)indent
+vim.o.tabstop = 2 -- Number of spaces that a Tab counts for
+vim.opt.shiftround = true -- Round indent to multiple of shiftwidth
+vim.o.smartindent = true -- Auto-indent new lines based on syntax
+
+-- Scrolling & wrapping
+vim.opt.sidescrolloff = 8 -- Minimum number of screen columns to keep to the cursor's left/right
 vim.o.wrap = false -- Disable line wrapping
-vim.opt.termguicolors = true -- Enable true colors
-vim.g.have_nerd_font = true
-vim.opt.clipboard = "unnamedplus"
-vim.opt.breakindent = true
-vim.opt.undofile = true
-vim.opt.signcolumn = "yes"
+vim.opt.scrolloff = 10 -- Minimum number of screen lines to keep above/below cursor
+vim.opt.splitkeep = "screen" -- Keep text on screen when splitting
 
-vim.o.ignorecase = true -- Ignore case when searching
-vim.o.smartcase = true -- Override ignorecase if search has capitals
+-- Display & UI
+vim.opt.termguicolors = true -- Enable 24-bit RGB color in the TUI
+vim.g.have_nerd_font = true -- Indicates availability of a Nerd Font for icons
+vim.opt.signcolumn = "yes" -- Always show the sign column (e.g. for diagnostics)
+vim.opt.cursorline = true -- Highlight the screen line of the cursor
+vim.opt.conceallevel = 3 -- Hide text marked by "conceal" syntax element
+vim.opt.showtabline = 1 -- Show tabline only if there are at least two tabs
+vim.opt.laststatus = 3 -- Global statusline at the bottom
+vim.opt.ruler = false -- Disable showing line/column ruler in the status line
+vim.opt.showmode = false -- Don't show current mode (e.g. --INSERT--) in command line
+vim.opt.cmdheight = 0 -- Height of the command line (0 hides it when not in use)
+
+-- Clipboard
+vim.opt.clipboard = "unnamedplus" -- Use the system clipboard for all operations
+
+-- Undo & file history
+vim.opt.undofile = true -- Enable persistent undo so undo history persists across sessions
+
+-- Search
+vim.o.ignorecase = true -- Ignore case in search patterns
+vim.o.smartcase = true -- Override ignorecase if search pattern contains uppercase letters
 vim.o.incsearch = true -- Show search matches as you type
-vim.opt.hlsearch = true
+vim.opt.hlsearch = true -- Highlight all search matches
 
-vim.opt.splitright = true
-vim.opt.splitbelow = true
+-- Splits
+vim.opt.splitright = true -- Vertical splits will automatically be to the right
+vim.opt.splitbelow = true -- Horizontal splits will automatically be below
 
-vim.opt.list = true
+-- Display invisible characters
+vim.opt.list = true -- Show whitespace characters
 vim.opt.listchars = vim.opt.listchars - "space" - "trail" - "lead" - "nbsp" - "tab"
-vim.cmd([[set listchars+=tab:\ \ ,eol:¬,extends:…,precedes:…]])
+vim.cmd([[set listchars+=tab:\ \ ,eol:¬,extends:…,precedes:…]]) -- Customize listchars for tabs, eol, extends, precedes
 
-vim.opt.cursorline = true
-vim.opt.scrolloff = 10
+-- Input & timeout
+vim.opt.timeoutlen = 500 -- Time in ms to wait for mapped sequence to complete
+vim.opt.ttimeoutlen = 0 -- Time in ms to wait for key code sequence to complete
+vim.opt.updatetime = 300 -- Time in ms of inactivity before writing swap file / triggering CursorHold
 
-vim.opt.conceallevel = 3
-vim.opt.confirm = true
+-- Completion & formatting
+vim.opt.completeopt = "menu,menuone,noselect" -- Options for Insert mode completion
+vim.opt.formatoptions = vim.opt.formatoptions - "c" - "r" - "o" -- Don't auto-wrap comments when hitting Enter
 
-vim.opt.smartindent = true
-vim.opt.splitkeep = "screen"
+-- Grep program
+vim.opt.grepformat = "%f:%l:%c:%m" -- Format of grep output
+vim.opt.grepprg = "rg --vimgrep" -- Use ripgrep for :grep
+vim.opt.inccommand = "nosplit" -- Show effects of a command incrementally without splitting window
 
-vim.opt.virtualedit = "block"
-
-vim.opt.wildmode = "longest:full,full"
-
-vim.opt.wrap = false
-
-vim.opt.showtabline = 1
-
-vim.opt.ruler = false
-vim.opt.showmode = false
-vim.opt.laststatus = 3
-
--- Decrease update time
-vim.opt.updatetime = 300
-
--- Decrease mapped sequence wait time
-vim.opt.timeoutlen = 500
-
--- Time in milliseconds to wait for a key code sequence to complete
-vim.opt.ttimeoutlen = 0
-
--- A comma-separated list of options for Insert mode completion
-vim.opt.completeopt = "menu,menuone,noselect"
-
--- Don't start comment line before/after prev line
-vim.opt.formatoptions = vim.opt.formatoptions - "c" - "r" - "o"
-
--- Program and format to use for the :grep
-vim.opt.grepformat = "%f:%l:%c:%m"
-vim.opt.grepprg = "rg --vimgrep"
-
--- Don't show partial off-screen results in a preview window
-vim.opt.inccommand = "nosplit"
-
--- Push the command line prompt to the bottom
-vim.opt.cmdheight = 0
+-- Wildmenu & command-line completion
+vim.opt.wildmode = "longest:full,full" -- Command-line completion mode
+vim.opt.virtualedit = "block" -- Allow cursor to move where there is no text in Visual Block mode

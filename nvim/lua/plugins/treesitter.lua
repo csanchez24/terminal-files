@@ -1,38 +1,44 @@
--- lua/plugins/treesitter.lua
+-- Treesitter configuration for Neovim
+-- Provides syntax highlighting, indentation, text objects, and more
+-- https://github.com/nvim-treesitter/nvim-treesitter
 
 return {
-	"nvim-treesitter/nvim-treesitter",
-	version = false,
-	build = ":TSUpdate",
-	event = "BufRead",
+	"nvim-treesitter/nvim-treesitter", -- Core Treesitter plugin
+	version = false, -- Use latest remote version
+	build = ":TSUpdate", -- Update parsers on plugin install/update
+	event = "BufRead", -- Load after opening a buffer
+
 	dependencies = {
 		{
-			"nvim-treesitter/nvim-treesitter-textobjects",
+			"nvim-treesitter/nvim-treesitter-textobjects", -- Additional textobject support
 			config = function()
-				-- When in diff mode, we want to use the default
-				-- vim text objects c & C instead of the treesitter ones.
-				local move = require("nvim-treesitter.textobjects.move") ---@type table<string,fun(...)>
+				-- Override 'goto' mappings in diff mode to use Vim defaults
+				local move = require("nvim-treesitter.textobjects.move")
 				local configs = require("nvim-treesitter.configs")
 				for name, fn in pairs(move) do
 					if name:find("goto") == 1 then
-						move[name] = function(q, ...)
+						move[name] = function(query, ...)
 							if vim.wo.diff then
-								local config = configs.get_module("textobjects.move")[name] ---@type table<string,string>
-								for key, query in pairs(config or {}) do
-									if q == query and key:find("[%]%[][cC]") then
+								-- If in diff view, run the default keymap instead of TS object query
+								local mod = configs.get_module("textobjects.move")[name] or {}
+								for key, q in pairs(mod) do
+									if query == q and key:find("[%]%[][cC]") then
 										vim.cmd("normal! " .. key)
 										return
 									end
 								end
 							end
-							return fn(q, ...)
+							-- Otherwise, use the original Treesitter move function
+							return fn(query, ...)
 						end
 					end
 				end
 			end,
 		},
 	},
+
 	opts = {
+		-- List of languages to ensure parser installation
 		ensure_installed = {
 			"bash",
 			"sql",
@@ -54,20 +60,31 @@ return {
 			"go",
 			"php",
 		},
-		-- Autoinstall languages that are not installed
-		auto_install = true,
+		auto_install = true, -- Automatically install missing parsers
+
+		-- Syntax highlighting powered by Treesitter
 		highlight = {
 			enable = true,
-			-- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-			-- If you are experiencing weird indenting issues, add the language to
-			-- the list of additional_vim_regex_highlighting and disabled languages for indent.
+			-- Additional regex-based highlighting (e.g. for Ruby indent)
 			additional_vim_regex_highlighting = { "ruby" },
 		},
-		indent = { enable = true, disable = { "ruby" } },
-		incremental_selection = { enable = true },
+
+		-- Indentation based on Treesitter parse tree
+		indent = {
+			enable = true,
+			disable = { "ruby" }, -- Disable for Ruby due to known issues
+		},
+
+		-- Incremental selection (expand/swap nodes)
+		incremental_selection = {
+			enable = true,
+		},
+
+		-- Textobject movements (functions, classes)
 		textobjects = {
 			move = {
 				enable = true,
+				-- Jump to next start/end of function or class
 				goto_next_start = { ["]f"] = "@function.outer", ["]c"] = "@class.outer" },
 				goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer" },
 				goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
@@ -75,23 +92,28 @@ return {
 			},
 		},
 	},
-	-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+
 	config = function(_, opts)
+		-- Remove duplicate entries in ensure_installed list
 		if type(opts.ensure_installed) == "table" then
-			---@type table<string, boolean>
-			local added = {}
+			local seen = {}
 			opts.ensure_installed = vim.tbl_filter(function(lang)
-				if added[lang] then
+				if seen[lang] then
 					return false
 				end
-				added[lang] = true
+				seen[lang] = true
 				return true
-			end, opts.ensure_installed) ---@diagnostic disable-line:param-type-mismatch
+			end, opts.ensure_installed)
 		end
 
+		-- Apply the Treesitter configuration
 		require("nvim-treesitter.configs").setup(opts)
 
-		-- Reset treesitter highlights
-		vim.api.nvim_create_user_command("TSResetHighlight", "write | edit | TSBufEnable highlight", { bang = true })
+		-- Create :TSResetHighlight command to re-enable highlighting after edits
+		vim.api.nvim_create_user_command(
+			"TSResetHighlight",
+			"write | edit | TSBufEnable highlight",
+			{ bang = true, desc = "Reset Treesitter highlights" }
+		)
 	end,
 }

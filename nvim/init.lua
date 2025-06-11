@@ -17,18 +17,30 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load Lazy.nvim setup
+-- Load and configure plugins using Lazy.nvim
 require("lazy").setup({
-	-- Simple plugins
+	-- Automatically detect and set editor indentation settings per file
 	"tpope/vim-sleuth",
-	{ "windwp/nvim-autopairs", config = true }, -- Auto-pairs
+
+	-- Automatically insert matching pairs of characters like (), {}, "", etc.
+	{ "windwp/nvim-autopairs", config = true },
+
+	-- Auto-close and auto-rename HTML/XML tags based on Treesitter
 	{ "windwp/nvim-ts-autotag", event = "BufRead", opts = {} },
+
+	-- Highlight and navigate TODO, FIXME, and other comment tags in code
 	{
 		"folke/todo-comments.nvim",
 		event = "BufRead",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
 	},
+
+	-- Go language support:
+	-- - Adds Go-specific commands and utilities
+	-- - Integrates with plenary for async utilities
+	-- - Uses Treesitter for syntax
+	-- - Hooks into nvim-dap for Go debugging
 	{
 		"olexsmir/gopher.nvim",
 		ft = "go",
@@ -40,8 +52,6 @@ require("lazy").setup({
 		opts = {},
 	},
 
-	-- Complex plugins (referencing separate files)
+	-- Import additional plugin configurations from lua/plugins/*.lua
 	{ import = "plugins" },
 })
-
--- Additional configurations
