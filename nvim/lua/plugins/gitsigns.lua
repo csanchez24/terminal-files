@@ -45,32 +45,35 @@ return {
 				end
 			end, { desc = "Jump to previous git [c]hange" })
 
-      -- [[ Actions ]] --
-      -- Stage or reset hunks in visual mode
-      -- stylua: ignore start
-      map('v', '<leader>hs', function()
-        gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-      end, { desc = 'Stage selected hunk' })
+			-- [[ Actions ]] --
+			-- Stage or reset hunks in visual mode
+			map("v", "<leader>hs", function()
+				gitsigns.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+			end, { desc = "Stage selected hunk" })
+			map("v", "<leader>hr", function()
+				gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+			end, { desc = "Reset selected hunk" })
 
-      map('v', '<leader>hr', function()
-        gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-      end, { desc = 'Reset selected hunk' })
-
-      -- Stage/reset and other hunk commands in normal mode
-      map('n', '<leader>hs', gitsigns.stage_hunk,   { desc = 'Stage current hunk' })
-      map('n', '<leader>hr', gitsigns.reset_hunk,   { desc = 'Reset current hunk' })
-      map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'Stage entire buffer' })
-      map('n', '<leader>hu', gitsigns.stage_hunk, { desc = 'Undo stage hunk' })
-      map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'Reset entire buffer' })
-      map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'Preview current hunk' })
-      map('n', '<leader>hb', gitsigns.blame_line,   { desc = 'Show git blame for line' })
-      map('n', '<leader>hd', gitsigns.diffthis,     { desc = 'Diff buffer vs index' })
-      map('n', '<leader>hD', function() gitsigns.diffthis('@') end, { desc = 'Diff buffer vs last commit' })
-			-- stylua: ignore end
+			-- Stage/reset and other hunk commands in normal mode
+			map("n", "<leader>hs", gitsigns.stage_hunk, { desc = "Stage current hunk" })
+			map("n", "<leader>hr", gitsigns.reset_hunk, { desc = "Reset current hunk" })
+			map("n", "<leader>hS", gitsigns.stage_buffer, { desc = "Stage entire buffer" })
+			map("n", "<leader>hR", gitsigns.reset_buffer, { desc = "Reset entire buffer" })
+			map("n", "<leader>hp", gitsigns.preview_hunk, { desc = "Preview current hunk" })
+			map("n", "<leader>hi", gitsigns.preview_hunk_inline, { desc = "Preview hunk inline" })
+			map("n", "<leader>hb", function()
+				gitsigns.blame_line({ full = true })
+			end, { desc = "Show git blame for line" })
+			map("n", "<leader>hd", gitsigns.diffthis, { desc = "Diff buffer vs index" })
+			map("n", "<leader>hD", function()
+				gitsigns.diffthis("~")
+			end, { desc = "Diff buffer vs last commit" })
 
 			-- [[ Toggles ]] --
 			map("n", "<leader>tb", gitsigns.toggle_current_line_blame, { desc = "Toggle inline git blame" })
-			map("n", "<leader>tD", gitsigns.preview_hunk_inline, { desc = "Toggle deleted lines" })
+			map("n", "<leader>tw", gitsigns.toggle_word_diff, { desc = "Toggle word diff" })
+			-- Text object
+			map({ "o", "x" }, "ih", gitsigns.select_hunk)
 		end,
 	},
 }

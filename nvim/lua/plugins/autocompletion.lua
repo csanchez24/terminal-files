@@ -64,7 +64,7 @@ return {
 
 		completion = {
 			documentation = {
-				auto_show = true, -- Don’t pop up docs immediately
+				auto_show = true, -- Pop up docs immediately
 				auto_show_delay_ms = 500, -- Delay before showing docs if enabled
 			},
 		},

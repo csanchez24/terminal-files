@@ -22,6 +22,7 @@ return {
 			winblend = 0, -- No transparency (0 = fully opaque)
 		},
 		keymaps = {
+			["<esc>"] = "actions.close", -- Press 'esc' to close the Oil window
 			["q"] = "actions.close", -- Press 'q' to close the Oil window
 			["h"] = "actions.parent", -- 'h' to go to parent directory
 			["l"] = "actions.select", -- 'l' to open file or enter directory
