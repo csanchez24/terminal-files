@@ -137,9 +137,11 @@ vim.keymap.set("n", "<leader>-", "<C-W>s", { desc = "Split window below", remap 
 vim.keymap.set("n", "<leader>|", "<C-W>v", { desc = "Split window right", remap = true })
 
 -- Tab commands
-vim.keymap.set("n", "<leader><tab>l", "<cmd>tablast<cr>", { desc = "Go to last tab" })
 vim.keymap.set("n", "<leader><tab>f", "<cmd>tabfirst<cr>", { desc = "Go to first tab" })
+vim.keymap.set("n", "<leader><tab>l", "<cmd>tablast<cr>", { desc = "Go to last tab" })
 vim.keymap.set("n", "<leader><tab><tab>", "<cmd>tabnew<cr>", { desc = "Open new tab" })
 vim.keymap.set("n", "<leader><tab>]", "<cmd>tabnext<cr>", { desc = "Next tab" })
 vim.keymap.set("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Previous tab" })
 vim.keymap.set("n", "<leader><tab>d", "<cmd>tabclose<cr>", { desc = "Close current tab" })
+vim.keymap.set("n", "<C-]>", "<cmd>tabnext<cr>", { desc = "Next tab" })
+vim.keymap.set("n", "<C-[>", "<cmd>tabprevious<cr>", { desc = "Previous tab" })
