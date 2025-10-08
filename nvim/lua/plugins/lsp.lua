@@ -93,8 +93,23 @@ return {
 
 		-- List of servers to configure with optional overrides
 		local servers = {
+			-- Java [*.java]
+			jdtls = {
+				capabilities = {
+					workspace = {
+						configuration = true,
+					},
+					textDocument = {
+						completion = {
+							completionItem = {
+								snippetSupport = true,
+							},
+						},
+					},
+				},
+			},
 			sqls = { on_attach = require("sqls").on_attach },
-			lua_ls = { settings = { Lua = { diagnostics = { globals = { "vim" } } } } },
+			lua_ls = { settings = { Lua = { diagnostics = { globals = { "vim", "vim.uv" } } } } },
 			ts_ls = {
 				settings = {
 					typescript = { format = { enable = false } },
@@ -147,6 +162,7 @@ return {
 		local ensure_installed = vim.tbl_keys(servers)
 		require("mason-lspconfig").setup({
 			ensure_installed = ensure_installed,
+			automatic_installation = true,
 			automatic_enable = { exclude = { "jdtls" } },
 		})
 
@@ -154,7 +170,7 @@ return {
 		for name, cfg in pairs(servers) do
 			cfg.capabilities = vim.tbl_deep_extend("force", {}, capabilities, cfg.capabilities or {})
 			if name ~= "jdtls" then
-				require("lspconfig")[name].setup(cfg)
+				vim.lsp.config(name, cfg)
 			end
 		end
 	end,

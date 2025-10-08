@@ -49,8 +49,6 @@ return {
 		"folke/lazydev.nvim",
 	},
 
-	--- @module 'blink.cmp'
-	--- @type blink.cmp.Config
 	opts = {
 		keymap = {
 			preset = "default",
@@ -65,7 +63,6 @@ return {
 		completion = {
 			documentation = {
 				auto_show = true, -- Pop up docs immediately
-				auto_show_delay_ms = 500, -- Delay before showing docs if enabled
 			},
 		},
 

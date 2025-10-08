@@ -25,6 +25,7 @@ return {
 			["javascript"] = { "eslint" }, -- Lint .js files with ESLint
 			["typescriptreact"] = { "eslint" }, -- Lint .tsx files with ESLint
 			["json"] = { "eslint" }, -- Lint .json files with ESLint
+			["php"] = { "phpcs" }, -- Lint .php files with phpcs
 			-- ['*'] = { 'global_linter' },           -- Run on all filetypes
 			-- ['_'] = { 'fallback_linter' },         -- Run when no other linter defined
 		}

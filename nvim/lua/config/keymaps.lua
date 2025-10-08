@@ -145,3 +145,6 @@ vim.keymap.set("n", "<leader><tab>[", "<cmd>tabprevious<cr>", { desc = "Previous
 vim.keymap.set("n", "<leader><tab>d", "<cmd>tabclose<cr>", { desc = "Close current tab" })
 vim.keymap.set("n", "<C-]>", "<cmd>tabnext<cr>", { desc = "Next tab" })
 vim.keymap.set("n", "<C-[>", "<cmd>tabprevious<cr>", { desc = "Previous tab" })
+
+-- Java build MotiveWave
+vim.keymap.set("n", "<leader>,", ":!./gradlew dmw<CR>", { desc = "Buid MotiveWave" })

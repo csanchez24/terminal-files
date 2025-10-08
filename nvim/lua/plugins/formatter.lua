@@ -79,6 +79,8 @@ return {
 			["markdown.mdx"] = { "prettier" },
 			["python"] = { "ruff_format" }, -- Python: ruff_format
 			["sql"] = { "sqlfluff" }, -- SQL: sqlfluff
+			["java"] = { "google-java-format" },
+			["php"] = { "php-cs-fixer" },
 		},
 	},
 }

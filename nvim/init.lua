@@ -4,16 +4,21 @@
 require("config.settings")
 require("config.keymaps")
 require("config.autocmds")
+require("config.jdtls")
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		lazypath,
-	})
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+	if vim.v.shell_error ~= 0 then
+		vim.api.nvim_echo({
+			{ "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+			{ out, "WarningMsg" },
+			{ "\nPress any key to exit..." },
+		}, true, {})
+		vim.fn.getchar()
+		os.exit(1)
+	end
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -36,21 +41,8 @@ require("lazy").setup({
 		opts = { signs = false },
 	},
 
-	-- Go language support:
-	-- - Adds Go-specific commands and utilities
-	-- - Integrates with plenary for async utilities
-	-- - Uses Treesitter for syntax
-	-- - Hooks into nvim-dap for Go debugging
-	{
-		"olexsmir/gopher.nvim",
-		ft = "go",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			"nvim-treesitter/nvim-treesitter",
-			"mfussenegger/nvim-dap",
-		},
-		opts = {},
-	},
+	-- Java jdtls extra tools e.g. linting, formatting, debuggin, ...
+	{ "mfussenegger/nvim-jdtls", ft = "java" },
 
 	-- Import additional plugin configurations from lua/plugins/*.lua
 	{ import = "plugins" },
