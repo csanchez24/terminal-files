@@ -108,7 +108,7 @@ return {
 					},
 				},
 			},
-			sqls = { on_attach = require("sqls").on_attach },
+			sqls = { on_attach = vim.lsp.enable("sqls") },
 			lua_ls = { settings = { Lua = { diagnostics = { globals = { "vim", "vim.uv" } } } } },
 			ts_ls = {
 				settings = {

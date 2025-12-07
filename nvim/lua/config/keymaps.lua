@@ -147,4 +147,4 @@ vim.keymap.set("n", "<C-]>", "<cmd>tabnext<cr>", { desc = "Next tab" })
 vim.keymap.set("n", "<C-[>", "<cmd>tabprevious<cr>", { desc = "Previous tab" })
 
 -- Java build MotiveWave
-vim.keymap.set("n", "<leader>,", ":!./gradlew dmw<CR>", { desc = "Buid MotiveWave" })
+vim.keymap.set("n", "<leader>,", ":!./gradlew mw_deploy<CR>", { desc = "Buid MotiveWave" })
