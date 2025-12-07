@@ -1,86 +1,160 @@
--- Autoformat setup using conform.nvim
+-- nvim/lua/plugins/formatter.lua
+-- Autoformat con conform.nvim
 -- https://github.com/stevearc/conform.nvim
 
--- Create :FormatDisable command to turn off autoformatting
-vim.api.nvim_create_user_command("FormatDisable", function(args)
-	if args.bang then
-		-- If called with bang (!), disable for this buffer only
-		vim.b.disable_autoformat = true
-	else
-		-- Otherwise, disable globally across all buffers
-		vim.g.disable_autoformat = true
-	end
-end, {
-	desc = "[D]isable autoformat-on-save", -- Description shown in :help
-	bang = true, -- Allow trailing ! in the command
-})
-
--- Create :FormatEnable command to re-enable autoformatting
-vim.api.nvim_create_user_command("FormatEnable", function()
-	-- Reset both buffer-local and global flags
-	vim.b.disable_autoformat = false
-	vim.g.disable_autoformat = false
-end, {
-	desc = "[R]e-enable autoformat-on-save",
-})
-
 return {
-	"stevearc/conform.nvim", -- Plugin repo
-	event = "BufRead", -- Load on buffer read
+	"stevearc/conform.nvim",
+	event = { "BufWritePre" },
+	cmd = { "ConformInfo" },
 	keys = {
 		{
-			"<leader>cF", -- Map <leader>cF in normal/visual modes
+			"<leader>cF",
 			function()
-				-- Manually trigger formatting; async with LSP fallback
 				require("conform").format({ async = true, lsp_fallback = true })
 			end,
 			mode = { "n", "v" },
-			desc = "[F]ormat buffer",
+			desc = "Format buffer",
+		},
+		{
+			"<leader>cf",
+			function()
+				require("conform").format({ async = true, lsp_fallback = true })
+			end,
+			mode = { "n", "v" },
+			desc = "Format buffer",
 		},
 	},
 	opts = {
-		notify_on_error = false, -- Suppress error notifications
+		notify_on_error = false,
 
-		-- Configure autoformat-on-save behavior per buffer
+		-- Format on save
 		format_on_save = function(bufnr)
-			-- Skip if disabled globally or for this buffer
+			-- Disable with global or buffer-local variable
 			if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
 				return
 			end
-			-- Disable LSP fallback for certain filetypes lacking standard style
-			local disabled_filetypes = { c = true, cpp = true, sql = true }
+
+			-- Disable for certain filetypes
+			local disabled_filetypes = { "sql", "java" }
+			if vim.tbl_contains(disabled_filetypes, vim.bo[bufnr].filetype) then
+				return
+			end
+
 			return {
-				timeout_ms = 500, -- Give formatters 500ms
-				lsp_fallback = not disabled_filetypes[vim.bo[bufnr].filetype],
+				timeout_ms = 500,
+				lsp_fallback = true,
 			}
 		end,
 
-		-- Specify formatters by filetype
+		-- Formatters por filetype
 		formatters_by_ft = {
-			["lua"] = { "stylua" }, -- Lua: stylua
-			["fish"] = { "fish_indent" }, -- Fish shell
-			["sh"] = { "shfmt" }, -- Shell scripts
-			["html"] = { "prettier" }, -- HTML via Prettier
-			["css"] = { "prettier" }, -- CSS via Prettier
-			["scss"] = { "prettier" },
-			["less"] = { "prettier" },
-			["json"] = { "prettier" }, -- JSON/JSONC
-			["jsonc"] = { "prettier" },
-			["yaml"] = { "prettier" },
-			["markdown"] = { "prettier" }, -- Markdown & MDX
-			["javascript"] = { "prettier" }, -- JS/TS/React etc.
-			["javascriptreact"] = { "prettier" },
-			["typescript"] = { "prettier" },
-			["typescriptreact"] = { "prettier" },
-			["astro"] = { "prettier" },
-			["vue"] = { "prettier" },
-			["graphql"] = { "prettier" },
-			["handlebars"] = { "prettier" },
+			-- Lua
+			lua = { "stylua" },
+
+			-- Shell
+			sh = { "shfmt" },
+			bash = { "shfmt" },
+			zsh = { "shfmt" },
+			fish = { "fish_indent" },
+
+			-- Web
+			html = { "prettier" },
+			css = { "prettier" },
+			scss = { "prettier" },
+			less = { "prettier" },
+
+			-- JavaScript/TypeScript
+			javascript = { "prettier" },
+			javascriptreact = { "prettier" },
+			typescript = { "prettier" },
+			typescriptreact = { "prettier" },
+			vue = { "prettier" },
+			svelte = { "prettier" },
+			astro = { "prettier" },
+
+			-- JSON/YAML
+			json = { "prettier" },
+			jsonc = { "prettier" },
+			yaml = { "prettier" },
+			toml = { "taplo" },
+
+			-- Markdown
+			markdown = { "prettier" },
 			["markdown.mdx"] = { "prettier" },
-			["python"] = { "ruff_format" }, -- Python: ruff_format
-			["sql"] = { "sqlfluff" }, -- SQL: sqlfluff
-			["java"] = { "google-java-format" },
-			["php"] = { "php-cs-fixer" },
+
+			-- GraphQL
+			graphql = { "prettier" },
+
+			-- Python
+			python = { "ruff_format", "ruff_organize_imports" },
+
+			-- Go
+			go = { "goimports", "gofmt" },
+
+			-- Rust
+			rust = { "rustfmt" },
+
+			-- PHP
+			php = { "php_cs_fixer" },
+			blade = { "blade-formatter" },
+
+			-- SQL
+			sql = { "sqlfluff" },
+
+			-- C/C++
+			c = { "clang_format" },
+			cpp = { "clang_format" },
+
+			-- Use a sub-list to run ONLY the first available formatter
+			-- javascript = { { "prettierd", "prettier" } },
+		},
+
+		-- Configuración de formatters específicos
+		formatters = {
+			shfmt = {
+				prepend_args = { "-i", "2", "-ci" },
+			},
+			stylua = {
+				prepend_args = { "--indent-type", "Spaces", "--indent-width", "2" },
+			},
 		},
 	},
+
+	init = function()
+		-- Format commands
+		vim.api.nvim_create_user_command("FormatDisable", function(args)
+			if args.bang then
+				-- FormatDisable! = buffer local
+				vim.b.disable_autoformat = true
+			else
+				-- FormatDisable = global
+				vim.g.disable_autoformat = true
+			end
+		end, {
+			desc = "Disable autoformat-on-save",
+			bang = true,
+		})
+
+		vim.api.nvim_create_user_command("FormatEnable", function()
+			vim.b.disable_autoformat = false
+			vim.g.disable_autoformat = false
+		end, {
+			desc = "Re-enable autoformat-on-save",
+		})
+
+		vim.api.nvim_create_user_command("Format", function(args)
+			local range = nil
+			if args.count ~= -1 then
+				local end_line = vim.api.nvim_buf_get_lines(0, args.line2 - 1, args.line2, true)[1]
+				range = {
+					start = { args.line1, 0 },
+					["end"] = { args.line2, end_line:len() },
+				}
+			end
+			require("conform").format({ async = true, lsp_fallback = true, range = range })
+		end, {
+			desc = "Format buffer or range",
+			range = true,
+		})
+	end,
 }

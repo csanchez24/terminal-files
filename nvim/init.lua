@@ -1,49 +1,111 @@
 -- init.lua
+-- Neovim configuration entry point
 
+-- ============================================================================
+-- Performance - Load first
+-- ============================================================================
+-- Disable unused providers
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
+-- ============================================================================
 -- Load base configurations
+-- ============================================================================
 require("config.settings")
 require("config.keymaps")
 require("config.autocmds")
-require("config.jdtls")
 
+-- ============================================================================
+-- Setup Lazy.nvim
+-- ============================================================================
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-	if vim.v.shell_error ~= 0 then
-		vim.api.nvim_echo({
-			{ "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-			{ out, "WarningMsg" },
-			{ "\nPress any key to exit..." },
-		}, true, {})
-		vim.fn.getchar()
-		os.exit(1)
-	end
+	vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load and configure plugins using Lazy.nvim
+-- ============================================================================
+-- Setup plugins
+-- ============================================================================
 require("lazy").setup({
-	-- Automatically detect and set editor indentation settings per file
-	"tpope/vim-sleuth",
+	spec = {
+		-- Simple plugins (no config needed)
+		"tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
+		{ "numToStr/Comment.nvim", opts = {} }, -- Better commenting (alternativa a mini.comment)
 
-	-- Automatically insert matching pairs of characters like (), {}, "", etc.
-	{ "windwp/nvim-autopairs", config = true },
+		-- Autopairs (choose one)
+		{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
+		-- { "windwp/nvim-ts-autotag", event = "BufRead", opts = {} }, -- Ya no lo necesitas con mini.pairs
 
-	-- Auto-close and auto-rename HTML/XML tags based on Treesitter
-	{ "windwp/nvim-ts-autotag", event = "BufRead", opts = {} },
+		-- Go support
+		{
+			"olexsmir/gopher.nvim",
+			ft = "go",
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"nvim-treesitter/nvim-treesitter",
+			},
+			opts = {},
+		},
 
-	-- Highlight and navigate TODO, FIXME, and other comment tags in code
-	{
-		"folke/todo-comments.nvim",
-		event = "BufRead",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		opts = { signs = false },
+		-- Load all plugins from lua/plugins/
+		{ import = "plugins" },
 	},
 
-	-- Java jdtls extra tools e.g. linting, formatting, debuggin, ...
-	{ "mfussenegger/nvim-jdtls", ft = "java" },
+	-- Lazy.nvim configuration
+	defaults = {
+		lazy = false, -- Don't lazy load by default
+		version = false, -- Use latest git commit
+	},
 
-	-- Import additional plugin configurations from lua/plugins/*.lua
-	{ import = "plugins" },
+	checker = {
+		enabled = true, -- Check for plugin updates
+		notify = false, -- Don't notify
+	},
+
+	change_detection = {
+		enabled = true,
+		notify = false,
+	},
+
+	performance = {
+		cache = {
+			enabled = true,
+		},
+		rtp = {
+			-- Disable some rtp plugins
+			disabled_plugins = {
+				"gzip",
+				"matchit",
+				"matchparen",
+				"netrwPlugin",
+				"tarPlugin",
+				"tohtml",
+				"tutor",
+				"zipPlugin",
+			},
+		},
+	},
+
+	ui = {
+		border = "rounded",
+		icons = {
+			cmd = "⌘",
+			config = "🛠",
+			event = "📅",
+			ft = "📂",
+			init = "⚙",
+			keys = "🗝",
+			plugin = "🔌",
+			runtime = "💻",
+			require = "🌙",
+			source = "📄",
+			start = "🚀",
+			task = "📌",
+			lazy = "💤 ",
+		},
+	},
 })

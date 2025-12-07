@@ -1,52 +1,151 @@
--- Collection of small, independent 'mini.nvim' plugins with comments
+-- nvim/lua/plugins/mini.lua
+-- Collection of various small independent plugins/modules
 -- https://github.com/echasnovski/mini.nvim
 
 return {
-	"echasnovski/mini.nvim", -- Core 'mini' plugin suite
-	version = false,
-	event = "BufRead", -- Load on buffer read for performance
-	dependencies = {
-		-- Context-aware commentstring for embedded filetypes (e.g. Vue, Svelte)
-		{ "JoosepAlviste/nvim-ts-context-commentstring", opts = { enable_autocmd = false } },
-	},
+  "echasnovski/mini.nvim",
+  version = false,
+  event = "VeryLazy",
+  dependencies = {
+    -- Needed for comment functionality with JSX/TSX
+    {
+      "JoosepAlviste/nvim-ts-context-commentstring",
+      opts = { enable_autocmd = false },
+    },
+  },
 
-	config = function()
-		-- [[ Icon Rendering ]]
-		-- Provides filetype icons for buffers and integrates with Telescope
-		require("mini.icons").setup({})
-		require("mini.icons").mock_nvim_web_devicons() -- Workaround for Telescope icon issue
+  config = function()
+    -- ========================================================================
+    -- Mini.icons - File icons (reemplaza nvim-web-devicons)
+    -- ========================================================================
+    require("mini.icons").setup()
+    -- Compatibilidad con plugins que usan nvim-web-devicons
+    MiniIcons.mock_nvim_web_devicons()
 
-		-- [[ Improved Text-Object Selection ]]
-		-- mini.ai: better 'around' and 'inside' text-objects for motions/commands
-		-- Examples:
-		--   va)  -> visually select around parentheses
-		--   yinq -> yank inside next single-quote
-		--   ci'  -> change inside single-quote
-		require("mini.ai").setup({ n_lines = 500 }) -- Scan up to 500 lines for matching objects
+    -- ========================================================================
+    -- Mini.ai - Better text objects
+    -- ========================================================================
+    -- Examples:
+    --  - va)  - [V]isually select [A]round [)]paren
+    --  - yinq - [Y]ank [I]nside [N]ext [']quote
+    --  - ci'  - [C]hange [I]nside [']quote
+    require("mini.ai").setup({
+      n_lines = 500,
+      -- Custom text objects
+      custom_textobjects = {
+        -- Whole buffer
+        e = function()
+          local from = { line = 1, col = 1 }
+          local to = {
+            line = vim.fn.line("$"),
+            col = math.max(vim.fn.getline("$"):len(), 1),
+          }
+          return { from = from, to = to }
+        end,
+      },
+    })
 
-		-- [[ Surround Manipulation ]]
-		-- mini.surround: add, delete, replace surroundings like brackets, quotes, tags
-		-- Commands:
-		--   saiw) -> add inner-surrounding parentheses around word
-		--   sd'   -> delete surrounding single-quotes
-		--   sr)'  -> replace surrounding parentheses with single-quotes
-		require("mini.surround").setup()
+    -- ========================================================================
+    -- Mini.surround - Add/delete/replace surroundings
+    -- ========================================================================
+    -- Examples:
+    --  - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
+    --  - sd'   - [S]urround [D]elete [']quotes
+    --  - sr)'  - [S]urround [R]eplace [)] [']
+    require("mini.surround").setup({
+      mappings = {
+        add = "sa", -- Add surrounding in Normal and Visual modes
+        delete = "sd", -- Delete surrounding
+        find = "sf", -- Find surrounding (to the right)
+        find_left = "sF", -- Find surrounding (to the left)
+        highlight = "sh", -- Highlight surrounding
+        replace = "sr", -- Replace surrounding
+        update_n_lines = "sn", -- Update `n_lines`
+      },
+    })
 
-		-- [[ Auto-Pairs ]]
-		-- mini.pairs: automatically insert matching pairs for [], {}, <>, '', "", etc.
-		require("mini.pairs").setup()
+    -- ========================================================================
+    -- Mini.pairs - Auto-close brackets
+    -- ========================================================================
+    require("mini.pairs").setup()
 
-		-- [[ Commenting Utility ]]
-		-- mini.comment: toggle line and block comments (gcc, gc{motion}, etc.)
-		-- Uses ts-context-commentstring for correct syntax in embedded sections
-		require("mini.comment").setup({
-			options = {
-				custom_commentstring = function()
-					-- Calculate commentstring via treesitter context or fall back
-					return require("ts_context_commentstring.internal").calculate_commentstring()
-						or vim.bo.commentstring
-				end,
-			},
-		})
-	end,
+    -- ========================================================================
+    -- Mini.comment - Better commenting
+    -- ========================================================================
+    -- Keymaps:
+    --  - gcc  - toggle comment line
+    --  - gc   - toggle comment selection (visual)
+    --  - gcap - toggle comment paragraph
+    require("mini.comment").setup({
+      options = {
+        -- Function to compute custom comment string
+        custom_commentstring = function()
+          -- Use ts-context-commentstring if available
+          local ok, ts_comment = pcall(require, "ts_context_commentstring.internal")
+          if ok then
+            return ts_comment.calculate_commentstring() or vim.bo.commentstring
+          end
+          return vim.bo.commentstring
+        end,
+      },
+    })
+
+    -- ========================================================================
+    -- Mini.statusline (OPCIONAL - si no usas lualine)
+    -- ========================================================================
+    -- Descomenta si quieres reemplazar lualine
+    -- require('mini.statusline').setup({ use_icons = true })
+
+    -- ========================================================================
+    -- Mini.tabline (OPCIONAL - tabs minimalistas)
+    -- ========================================================================
+    -- Descomenta si quieres tabs
+    -- require('mini.tabline').setup()
+
+    -- ========================================================================
+    -- Mini.bufremove - Better buffer deletion
+    -- ========================================================================
+    require("mini.bufremove").setup()
+
+    -- Keymap para cerrar buffer sin cerrar ventana
+    vim.keymap.set("n", "<leader>bd", function()
+      require("mini.bufremove").delete(0, false)
+    end, { desc = "Delete Buffer" })
+
+    vim.keymap.set("n", "<leader>bD", function()
+      require("mini.bufremove").delete(0, true)
+    end, { desc = "Delete Buffer (Force)" })
+
+    -- ========================================================================
+    -- Mini.indentscope - Indent guides con scope
+    -- ========================================================================
+    require("mini.indentscope").setup({
+      symbol = "│",
+      options = { try_as_border = true },
+      draw = {
+        delay = 0,
+        animation = require("mini.indentscope").gen_animation.none(),
+      },
+    })
+
+    -- Disable in certain filetypes
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = {
+        "help",
+        "alpha",
+        "dashboard",
+        "neo-tree",
+        "Trouble",
+        "trouble",
+        "lazy",
+        "mason",
+        "notify",
+        "toggleterm",
+        "lazyterm",
+      },
+      callback = function()
+        vim.b.miniindentscope_disable = true
+      end,
+    })
+  end,
 }

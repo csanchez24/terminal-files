@@ -1,177 +1,372 @@
--- LSP Configuration & Mason Integration
--- Core Neovim LSP client with Mason for easy server management
+-- nvim/lua/plugins/lsp.lua
+-- LSP Configuration
 -- https://github.com/neovim/nvim-lspconfig
--- https://github.com/mason-org/mason.nvim
--- https://github.com/mason-org/mason-lspconfig.nvim
 
 return {
-	"neovim/nvim-lspconfig", -- Main LSP configuration plugin
-	event = "BufReadPre", -- Load after a buffer is read
+  "neovim/nvim-lspconfig",
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = {
+    -- Mason - LSP installer
+    { "williamboman/mason.nvim", config = true },
+    "williamboman/mason-lspconfig.nvim",
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
 
-	dependencies = {
-		{ "mason-org/mason.nvim", opts = {} }, -- Install and manage external LSPs/tools
-		"mason-org/mason-lspconfig.nvim", -- Integrate Mason with lspconfig
-		"WhoIsSethDaniel/mason-tool-installer.nvim", -- Auto-install specified development tools
-		"nanotee/sqls.nvim", -- SQL language server support
-		{ "folke/lazydev.nvim", ft = { "lua" }, opts = {} }, -- Lua dev utilities for config & runtime
-		"saghen/blink.cmp", -- Extension for completion capabilities
-	},
+    -- Additional tools
+    "nanotee/sqls.nvim",
+    "b0o/schemastore.nvim", -- JSON/YAML schemas
 
-	config = function()
-		-- Setup buffer-local keymaps when any LSP server attaches
-		vim.api.nvim_create_autocmd("LspAttach", {
-			group = vim.api.nvim_create_augroup("ag__lsp_attach", { clear = true }),
-			callback = function(args)
-				-- Helper to map keys in the attached buffer with descriptive names
-				local map = function(keys, fn, desc)
-					vim.keymap.set("n", keys, fn, { buffer = args.buf, desc = "LSP: " .. desc })
-				end
+    -- Lua LSP for Neovim config
+    { "folke/lazydev.nvim", ft = "lua", opts = {} },
+  },
 
-				-- Get the LSP client that just attached
-				local client = vim.lsp.get_client_by_id(args.data.client_id)
+  config = function()
+    -- ========================================================================
+    -- Setup Mason first
+    -- ========================================================================
+    require("mason").setup({
+      ui = {
+        border = "rounded",
+        icons = {
+          package_installed = "✓",
+          package_pending = "➜",
+          package_uninstalled = "✗",
+        },
+      },
+    })
 
-				-- Go to Implementation (gI), Declaration (gD), Definition (gd)
-				map("gI", require("telescope.builtin").lsp_implementations, "Goto Implementation")
-				map("gD", vim.lsp.buf.declaration, "Goto Declaration")
-				map("gd", require("telescope.builtin").lsp_definitions, "Goto Definition")
+    -- ========================================================================
+    -- LSP Capabilities (with blink.cmp)
+    -- ========================================================================
+    local capabilities = vim.lsp.protocol.make_client_capabilities()
 
-				-- Type definition and references
-				map("<leader>D", require("telescope.builtin").lsp_type_definitions, "Type Definition")
-				map("gr", require("telescope.builtin").lsp_references, "References")
+    -- Get capabilities from blink.cmp
+    local has_blink, blink = pcall(require, "blink.cmp")
+    if has_blink then
+      capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities())
+    end
 
-				-- Document symbols, rename, code actions, and hover
-				map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "Document Symbols")
-				map("<leader>rn", vim.lsp.buf.rename, "Rename Symbol")
-				map("<leader>ca", vim.lsp.buf.code_action, "Code Action")
-				map("K", vim.lsp.buf.hover, "Hover Documentation")
+    -- ========================================================================
+    -- LSP Attach autocommand
+    -- ========================================================================
+    vim.api.nvim_create_autocmd("LspAttach", {
+      group = vim.api.nvim_create_augroup("lsp_attach", { clear = true }),
+      callback = function(event)
+        local map = function(keys, func, desc)
+          vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
+        end
 
-				-- Highlight symbol under cursor on CursorHold and clear on move
-				if client ~= nil and client.server_capabilities.documentHighlightProvider then
-					local hl_grp = vim.api.nvim_create_augroup("ag__lsp_highlight", { clear = false })
-					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-						buffer = args.buf,
-						group = hl_grp,
-						callback = vim.lsp.buf.document_highlight,
-					})
-					vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-						buffer = args.buf,
-						group = hl_grp,
-						callback = vim.lsp.buf.clear_references,
-					})
-					vim.api.nvim_create_autocmd("LspDetach", {
-						group = vim.api.nvim_create_augroup("ag__lsp_detach", { clear = true }),
-						callback = function(detach_args)
-							vim.lsp.buf.clear_references()
-							vim.api.nvim_clear_autocmds({ group = "ag__lsp_highlight", buffer = detach_args.buf })
-						end,
-					})
-				end
+        local client = vim.lsp.get_client_by_id(event.data.client_id)
+        if not client then
+          return
+        end
 
-				-- Toggle inlay hints if supported
-				if client ~= nil and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
-					map("<leader>th", function()
-						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-					end, "Toggle Inlay Hints")
-				end
+        -- ========================================================================
+        -- Navigation keymaps
+        -- ========================================================================
+        map("gd", require("telescope.builtin").lsp_definitions, "[G]oto [D]efinition")
+        map("gr", require("telescope.builtin").lsp_references, "[G]oto [R]eferences")
+        map("gI", require("telescope.builtin").lsp_implementations, "[G]oto [I]mplementation")
+        map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
+        map("gy", require("telescope.builtin").lsp_type_definitions, "T[y]pe Definition")
 
-				-- Organize imports in TypeScript server
-				if client ~= nil and client.name == "ts_ls" then
-					map("<leader>co", function()
-						client:exec_cmd({
-							title = "organize_imports",
-							command = "_typescript.organizeImports",
-							arguments = { vim.api.nvim_buf_get_name(args.buf) },
-						}, { bufnr = args.buf })
-					end, "Organize Imports")
-				end
-			end,
-		})
+        -- ========================================================================
+        -- Code actions
+        -- ========================================================================
+        map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
+        map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
 
-		-- Enhance LSP capabilities for better completion integration
-		local capabilities = vim.lsp.protocol.make_client_capabilities()
-		capabilities = vim.tbl_deep_extend("force", capabilities, require("blink.cmp").get_lsp_capabilities())
+        -- ========================================================================
+        -- Documentation
+        -- ========================================================================
+        map("K", vim.lsp.buf.hover, "Hover Documentation")
+        map("gK", vim.lsp.buf.signature_help, "Signature Documentation")
 
-		-- List of servers to configure with optional overrides
-		local servers = {
-			-- Java [*.java]
-			jdtls = {
-				capabilities = {
-					workspace = {
-						configuration = true,
-					},
-					textDocument = {
-						completion = {
-							completionItem = {
-								snippetSupport = true,
-							},
-						},
-					},
-				},
-			},
-			sqls = { on_attach = vim.lsp.enable("sqls") },
-			lua_ls = { settings = { Lua = { diagnostics = { globals = { "vim", "vim.uv" } } } } },
-			ts_ls = {
-				settings = {
-					typescript = { format = { enable = false } },
-					javascript = { format = { enable = false } },
-					completions = { completeFunctionCalls = true },
-				},
-			},
-			html = {
-				filetypes = { "html", "tsx", "jsx", "vue", "blade", "templ", "php" },
-				init_options = { provideFormatter = false },
-			},
-			cssls = { settings = { css = { validate = false } } },
-			tailwindcss = {
-				filetypes = {
-					"astro",
-					"templ",
-					"hbs",
-					"html",
-					"mdx",
-					"php",
-					"css",
-					"javascript",
-					"javascriptreact",
-					"typescript",
-					"typescriptreact",
-				},
-				init_options = { userLanguages = { templ = "html" } },
-				settings = {
-					tailwindCSS = {
-						experimental = {
-							classRegex = {
-								"tw`([^`]*)",
-								'tw="([^"]*)',
-								'tw={"([^"}]*)',
-								"tw\\.w+`([^`]*)",
-								"tw(.*?)`([^`]*)",
-							},
-						},
-					},
-				},
-			},
-			yamlls = { settings = { yaml = { keyOrdering = false } } },
-			intelephense = {},
-		}
+        -- ========================================================================
+        -- Diagnostics
+        -- ========================================================================
+        map("<leader>cd", vim.diagnostic.open_float, "Line [D]iagnostics")
+        map("<leader>cl", vim.diagnostic.setloclist, "[L]ocation List")
+        map("[d", vim.diagnostic.goto_prev, "Previous Diagnostic")
+        map("]d", vim.diagnostic.goto_next, "Next Diagnostic")
 
-		-- Keymap to open Mason UI
-		vim.keymap.set("n", "<leader>mm", "<cmd>Mason<CR>", { desc = "Open Mason" })
+        -- ========================================================================
+        -- Symbols
+        -- ========================================================================
+        map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "[D]ocument [S]ymbols")
+        map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "[W]orkspace [S]ymbols")
 
-		-- Ensure desired servers are installed via Mason
-		local ensure_installed = vim.tbl_keys(servers)
-		require("mason-lspconfig").setup({
-			ensure_installed = ensure_installed,
-			automatic_installation = true,
-			automatic_enable = { exclude = { "jdtls" } },
-		})
+        -- ========================================================================
+        -- Workspace
+        -- ========================================================================
+        map("<leader>wa", vim.lsp.buf.add_workspace_folder, "[W]orkspace [A]dd Folder")
+        map("<leader>wr", vim.lsp.buf.remove_workspace_folder, "[W]orkspace [R]emove Folder")
+        map("<leader>wl", function()
+          print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+        end, "[W]orkspace [L]ist Folders")
 
-		-- Setup each LSP server with its config and enhanced capabilities
-		for name, cfg in pairs(servers) do
-			cfg.capabilities = vim.tbl_deep_extend("force", {}, capabilities, cfg.capabilities or {})
-			if name ~= "jdtls" then
-				vim.lsp.config(name, cfg)
-			end
-		end
-	end,
+        -- ========================================================================
+        -- Inlay hints (if supported)
+        -- ========================================================================
+        if client:supports_method("textDocument/inlayHint") then
+          map("<leader>th", function()
+            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+          end, "[T]oggle Inlay [H]ints")
+        end
+
+        -- ========================================================================
+        -- Document highlight (if supported)
+        -- ========================================================================
+        if client:supports_method("textDocument/documentHighlight") then
+          local highlight_augroup = vim.api.nvim_create_augroup("lsp_highlight", { clear = false })
+
+          vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+            buffer = event.buf,
+            group = highlight_augroup,
+            callback = vim.lsp.buf.document_highlight,
+          })
+
+          vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+            buffer = event.buf,
+            group = highlight_augroup,
+            callback = vim.lsp.buf.clear_references,
+          })
+
+          vim.api.nvim_create_autocmd("LspDetach", {
+            group = vim.api.nvim_create_augroup("lsp_detach", { clear = true }),
+            callback = function(event2)
+              vim.lsp.buf.clear_references()
+              vim.api.nvim_clear_autocmds({ group = "lsp_highlight", buffer = event2.buf })
+            end,
+          })
+        end
+
+        -- ========================================================================
+        -- TypeScript specific
+        -- ========================================================================
+        if client.name == "ts_ls" then
+          map("<leader>co", function()
+            vim.lsp.buf.execute_command({
+              command = "_typescript.organizeImports",
+              arguments = { vim.api.nvim_buf_get_name(0) },
+            })
+          end, "[O]rganize [I]mports")
+        end
+      end,
+    })
+
+    -- ========================================================================
+    -- Diagnostic configuration
+    -- ========================================================================
+    vim.diagnostic.config({
+      underline = true,
+      update_in_insert = false,
+      virtual_text = {
+        spacing = 4,
+        source = "if_many",
+        prefix = "●",
+      },
+      severity_sort = true,
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = " ",
+          [vim.diagnostic.severity.WARN] = " ",
+          [vim.diagnostic.severity.HINT] = " ",
+          [vim.diagnostic.severity.INFO] = " ",
+        },
+      },
+      float = {
+        border = "rounded",
+        source = "always",
+        header = "",
+        prefix = "",
+      },
+    })
+
+    -- ========================================================================
+    -- Server configurations
+    -- ========================================================================
+    local servers = {
+      -- Lua
+      lua_ls = {
+        settings = {
+          Lua = {
+            runtime = { version = "LuaJIT" },
+            workspace = {
+              checkThirdParty = false,
+              library = {
+                "${3rd}/luv/library",
+                unpack(vim.api.nvim_get_runtime_file("", true)),
+              },
+            },
+            completion = {
+              callSnippet = "Replace",
+            },
+            diagnostics = {
+              disable = { "missing-fields" },
+              globals = { "vim" },
+            },
+            format = {
+              enable = false,
+            },
+            telemetry = {
+              enable = false,
+            },
+          },
+        },
+      },
+
+      -- JavaScript/TypeScript
+      ts_ls = {
+        settings = {
+          typescript = {
+            format = { enable = false },
+            inlayHints = {
+              includeInlayParameterNameHints = "all",
+              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            },
+          },
+          javascript = {
+            format = { enable = false },
+          },
+        },
+      },
+
+      -- HTML
+      html = {
+        filetypes = { "html", "templ", "blade" },
+      },
+
+      -- CSS
+      cssls = {
+        settings = {
+          css = { validate = true, lint = { unknownAtRules = "ignore" } },
+          scss = { validate = true, lint = { unknownAtRules = "ignore" } },
+          less = { validate = true, lint = { unknownAtRules = "ignore" } },
+        },
+      },
+
+      -- Tailwind
+      tailwindcss = {
+        filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
+      },
+
+      -- JSON
+      jsonls = {
+        settings = {
+          json = {
+            schemas = require("schemastore").json.schemas(),
+            validate = { enable = true },
+          },
+        },
+      },
+
+      -- YAML
+      yamlls = {
+        settings = {
+          yaml = {
+            schemaStore = {
+              enable = false,
+              url = "",
+            },
+            schemas = require("schemastore").yaml.schemas(),
+            keyOrdering = false,
+          },
+        },
+      },
+
+      -- Python
+      basedpyright = {
+        settings = {
+          basedpyright = {
+            analysis = {
+              typeCheckingMode = "basic",
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+            },
+          },
+        },
+      },
+
+      -- Go
+      gopls = {
+        settings = {
+          gopls = {
+            gofumpt = true,
+            codelenses = {
+              gc_details = false,
+              generate = true,
+              regenerate_cgo = true,
+              run_govulncheck = true,
+              test = true,
+              tidy = true,
+              upgrade_dependency = true,
+              vendor = true,
+            },
+            hints = {
+              assignVariableTypes = true,
+              compositeLiteralFields = true,
+              compositeLiteralTypes = true,
+              constantValues = true,
+              functionTypeParameters = true,
+              parameterNames = true,
+              rangeVariableTypes = true,
+            },
+            analyses = {
+              fieldalignment = true,
+              nilness = true,
+              unusedparams = true,
+              unusedwrite = true,
+              useany = true,
+            },
+            usePlaceholders = true,
+            completeUnimported = true,
+            staticcheck = true,
+            directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+            semanticTokens = true,
+          },
+        },
+      },
+
+      -- PHP
+      intelephense = {},
+
+      -- SQL
+      sqls = {
+        on_attach = function(client, bufnr)
+          require("sqls").on_attach(client, bufnr)
+        end,
+      },
+    }
+
+    -- ========================================================================
+    -- Setup servers with Mason
+    -- ========================================================================
+    local ensure_installed = vim.tbl_keys(servers or {})
+    vim.list_extend(ensure_installed, {
+      "stylua", -- Lua formatter
+      "shfmt", -- Shell formatter
+    })
+
+    require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+
+    require("mason-lspconfig").setup({
+      handlers = {
+        function(server_name)
+          -- Skip jdtls (handled by nvim-jdtls)
+          if server_name == "jdtls" then
+            return
+          end
+
+          local server = servers[server_name] or {}
+          server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
+          require("lspconfig")[server_name].setup(server)
+        end,
+      },
+    })
+  end,
 }

@@ -1,0 +1,214 @@
+# ~/.config/yazi/theme.toml
+# Dracula Pro theme for Yazi
+
+# Dracula Pro colors
+# background: #0B0D0F
+# foreground: #F8F8F2
+# comment:    #708CA9
+# cyan:       #80FFEA
+# green:      #8AFF80
+# orange:     #FFCA80
+# pink:       #FF80BF
+# purple:     #9580FF
+# red:        #FF9580
+# yellow:     #FFFF80
+
+[mgr]
+cwd = { fg = "#80FFEA" }
+
+# Hovered
+hovered = { fg = "#0B0D0F", bg = "#9580FF" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword = { fg = "#FFFF80", italic = true }
+find_position = { fg = "#FF80BF", bg = "reset", italic = true }
+
+# Marker
+marker_selected = { fg = "#8AFF80", bg = "#8AFF80" }
+marker_copied = { fg = "#FFFF80", bg = "#FFFF80" }
+marker_cut = { fg = "#FF9580", bg = "#FF9580" }
+
+# Tab
+tab_active = { fg = "#0B0D0F", bg = "#9580FF" }
+tab_inactive = { fg = "#708CA9", bg = "#414D58" }
+tab_width = 1
+
+# Border
+border_symbol = "│"
+border_style = { fg = "#708CA9" }
+
+# Highlighting
+syntect_theme = "~/.config/yazi/Dracula.tmTheme"
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "#414D58", bg = "#414D58" }
+
+# Mode
+mode_normal = { fg = "#0B0D0F", bg = "#8AFF80", bold = true }
+mode_select = { fg = "#0B0D0F", bg = "#9580FF", bold = true }
+mode_unset = { fg = "#0B0D0F", bg = "#FF80BF", bold = true }
+
+# Progress
+progress_label = { fg = "#F8F8F2", bold = true }
+progress_normal = { fg = "#9580FF", bg = "#414D58" }
+progress_error = { fg = "#FF9580", bg = "#414D58" }
+
+# Permissions
+permissions_t = { fg = "#8AFF80" }
+permissions_r = { fg = "#FFFF80" }
+permissions_w = { fg = "#FF9580" }
+permissions_x = { fg = "#80FFEA" }
+permissions_s = { fg = "#708CA9" }
+
+[input]
+border = { fg = "#9580FF" }
+title = { fg = "#F8F8F2" }
+value = { fg = "#FFFF80" }
+selected = { reversed = true }
+
+[select]
+border = { fg = "#9580FF" }
+active = { fg = "#FF80BF" }
+inactive = { fg = "#708CA9" }
+
+[tasks]
+border = { fg = "#9580FF" }
+title = { fg = "#F8F8F2" }
+hovered = { underline = true }
+
+[which]
+mask = { bg = "#0B0D0F" }
+cand = { fg = "#80FFEA" }
+rest = { fg = "#708CA9" }
+desc = { fg = "#FF80BF" }
+separator = "  "
+separator_style = { fg = "#708CA9" }
+
+[help]
+on = { fg = "#FF80BF" }
+run = { fg = "#80FFEA" }
+desc = { fg = "#708CA9" }
+hovered = { bg = "#414D58", bold = true }
+footer = { fg = "#414D58", bg = "#F8F8F2" }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "#80FFEA" },
+  
+  # Videos
+  { mime = "video/*", fg = "#FFFF80" },
+  { mime = "audio/*", fg = "#FFFF80" },
+  
+  # Archives
+  { mime = "application/zip", fg = "#FF80BF" },
+  { mime = "application/gzip", fg = "#FF80BF" },
+  { mime = "application/x-tar", fg = "#FF80BF" },
+  { mime = "application/x-bzip*", fg = "#FF80BF" },
+  { mime = "application/x-7z-compressed", fg = "#FF80BF" },
+  { mime = "application/x-rar", fg = "#FF80BF" },
+  
+  # Documents
+  { mime = "application/pdf", fg = "#FF9580" },
+  { mime = "application/msword", fg = "#9580FF" },
+  { mime = "application/vnd.ms-*", fg = "#9580FF" },
+  
+  # Code
+  { name = "*.js", fg = "#FFFF80" },
+  { name = "*.ts", fg = "#9580FF" },
+  { name = "*.jsx", fg = "#80FFEA" },
+  { name = "*.tsx", fg = "#80FFEA" },
+  { name = "*.py", fg = "#8AFF80" },
+  { name = "*.go", fg = "#80FFEA" },
+  { name = "*.rs", fg = "#FFCA80" },
+  { name = "*.php", fg = "#9580FF" },
+  { name = "*.lua", fg = "#9580FF" },
+  { name = "*.rb", fg = "#FF9580" },
+  
+  # Config
+  { name = "*.json", fg = "#FFFF80" },
+  { name = "*.toml", fg = "#FFCA80" },
+  { name = "*.yaml", fg = "#FF80BF" },
+  { name = "*.yml", fg = "#FF80BF" },
+  
+  # Markup
+  { name = "*.md", fg = "#F8F8F2" },
+  { name = "*.html", fg = "#FF9580" },
+  { name = "*.css", fg = "#9580FF" },
+  
+  # Shell
+  { name = "*.sh", fg = "#8AFF80" },
+  { name = "*.zsh", fg = "#8AFF80" },
+  { name = "*.fish", fg = "#8AFF80" },
+  
+  # Special files
+  { name = "*README*", fg = "#FFFF80", bold = true },
+  { name = "*LICENSE*", fg = "#FFCA80" },
+  { name = "*.lock", fg = "#708CA9" },
+  { name = "*.log", fg = "#708CA9" },
+  
+  # Git
+  { name = ".gitignore", fg = "#708CA9" },
+  { name = ".gitattributes", fg = "#708CA9" },
+  { name = ".gitmodules", fg = "#708CA9" },
+  
+  # Directories
+  { name = "*/", fg = "#9580FF", bold = true },
+  { name = ".git/", fg = "#708CA9" },
+  { name = "node_modules/", fg = "#708CA9" },
+  { name = "vendor/", fg = "#708CA9" },
+]
+
+[icon]
+rules = [
+  { name = "*/", text = "" },
+  { name = ".git/", text = "" },
+  
+  # Programming languages
+  { name = "*.js", text = "" },
+  { name = "*.ts", text = "" },
+  { name = "*.jsx", text = "" },
+  { name = "*.tsx", text = "" },
+  { name = "*.py", text = "" },
+  { name = "*.go", text = "" },
+  { name = "*.rs", text = "" },
+  { name = "*.php", text = "" },
+  { name = "*.lua", text = "" },
+  { name = "*.rb", text = "" },
+  { name = "*.java", text = "" },
+  { name = "*.c", text = "" },
+  { name = "*.cpp", text = "" },
+  
+  # Markup & config
+  { name = "*.json", text = "" },
+  { name = "*.toml", text = "" },
+  { name = "*.yaml", text = "" },
+  { name = "*.yml", text = "" },
+  { name = "*.xml", text = "" },
+  { name = "*.md", text = "" },
+  { name = "*.html", text = "" },
+  { name = "*.css", text = "" },
+  
+  # Media
+  { name = "*.png", text = "" },
+  { name = "*.jpg", text = "" },
+  { name = "*.jpeg", text = "" },
+  { name = "*.gif", text = "" },
+  { name = "*.svg", text = "" },
+  { name = "*.mp4", text = "" },
+  { name = "*.mp3", text = "" },
+  
+  # Archives
+  { name = "*.zip", text = "" },
+  { name = "*.tar", text = "" },
+  { name = "*.gz", text = "" },
+  
+  # Special
+  { name = "README*", text = "" },
+  { name = "LICENSE*", text = "" },
+  { name = "Dockerfile", text = "" },
+  { name = ".gitignore", text = "" },
+]
