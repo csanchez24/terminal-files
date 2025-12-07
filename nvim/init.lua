@@ -1,47 +1,111 @@
 -- init.lua
+-- Neovim configuration entry point
 
+-- ============================================================================
+-- Performance - Load first
+-- ============================================================================
+-- Disable unused providers
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
+-- ============================================================================
 -- Load base configurations
+-- ============================================================================
 require("config.settings")
 require("config.keymaps")
 require("config.autocmds")
 
+-- ============================================================================
+-- Setup Lazy.nvim
+-- ============================================================================
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		lazypath,
-	})
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+	vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load Lazy.nvim setup
+-- ============================================================================
+-- Setup plugins
+-- ============================================================================
 require("lazy").setup({
-	-- Simple plugins
-	"tpope/vim-sleuth",
-	{ "windwp/nvim-autopairs", config = true }, -- Auto-pairs
-	{ "windwp/nvim-ts-autotag", event = "BufRead", opts = {} },
-	{
-		"folke/todo-comments.nvim",
-		event = "BufRead",
-		dependencies = { "nvim-lua/plenary.nvim" },
-		opts = { signs = false },
-	},
-	{
-		"olexsmir/gopher.nvim",
-		ft = "go",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			"nvim-treesitter/nvim-treesitter",
-			"mfussenegger/nvim-dap",
+	spec = {
+		-- Simple plugins (no config needed)
+		"tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
+		{ "numToStr/Comment.nvim", opts = {} }, -- Better commenting (alternativa a mini.comment)
+
+		-- Autopairs (choose one)
+		{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
+		-- { "windwp/nvim-ts-autotag", event = "BufRead", opts = {} }, -- Ya no lo necesitas con mini.pairs
+
+		-- Go support
+		{
+			"olexsmir/gopher.nvim",
+			ft = "go",
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"nvim-treesitter/nvim-treesitter",
+			},
+			opts = {},
 		},
-		opts = {},
+
+		-- Load all plugins from lua/plugins/
+		{ import = "plugins" },
 	},
 
-	-- Complex plugins (referencing separate files)
-	{ import = "plugins" },
-})
+	-- Lazy.nvim configuration
+	defaults = {
+		lazy = false, -- Don't lazy load by default
+		version = false, -- Use latest git commit
+	},
 
--- Additional configurations
+	checker = {
+		enabled = true, -- Check for plugin updates
+		notify = false, -- Don't notify
+	},
+
+	change_detection = {
+		enabled = true,
+		notify = false,
+	},
+
+	performance = {
+		cache = {
+			enabled = true,
+		},
+		rtp = {
+			-- Disable some rtp plugins
+			disabled_plugins = {
+				"gzip",
+				"matchit",
+				"matchparen",
+				"netrwPlugin",
+				"tarPlugin",
+				"tohtml",
+				"tutor",
+				"zipPlugin",
+			},
+		},
+	},
+
+	ui = {
+		border = "rounded",
+		icons = {
+			cmd = "⌘",
+			config = "🛠",
+			event = "📅",
+			ft = "📂",
+			init = "⚙",
+			keys = "🗝",
+			plugin = "🔌",
+			runtime = "💻",
+			require = "🌙",
+			source = "📄",
+			start = "🚀",
+			task = "📌",
+			lazy = "💤 ",
+		},
+	},
+})

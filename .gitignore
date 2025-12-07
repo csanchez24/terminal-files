@@ -1,1 +1,76 @@
+# ============================================================================
+# Dotfiles .gitignore
+# ============================================================================
+
+# Operating System
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Neovim
+nvim/.netrwhist
+nvim/plugin/
+nvim/lazy-lock.json
+nvim/.luarc.json
+nvim/after/
+
+# Don't ignore lazy-lock if you want reproducible installs
+# Uncomment to track it:
+# !nvim/lazy-lock.json
+
+# Temporary files
+*.swp
+*.swo
+*~
+*.tmp
+.*.swp
+.*.swo
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.backup
+*.bak
+.backup/
+.config-backup*/
+
+# Personal/Private
+*_local
+*_private
+.env
+.env.*
+
+# History files
+.zsh_history
+.bash_history
+.lesshst
+
+# Cache
+.cache/
+__pycache__/
+*.pyc
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Compiled files
+*.o
+*.so
+*.dylib
+
+# Testing
+.coverage
+*.test
+
+# Don't ignore these
+!.gitignore
+!.gitattributes

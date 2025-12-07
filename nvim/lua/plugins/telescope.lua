@@ -1,149 +1,270 @@
--- lua/plugins/telescope.lua
+-- nvim/lua/plugins/telescope.lua
+-- Fuzzy finder
+-- https://github.com/nvim-telescope/telescope.nvim
 
 return {
 	"nvim-telescope/telescope.nvim",
-	event = "VimEnter",
-	branch = "0.1.x",
+	cmd = "Telescope",
+	version = false, -- Use latest
 	dependencies = {
 		"nvim-lua/plenary.nvim",
+
+		-- FZF native (MUCHO más rápido)
 		{
-			-- If encountering errors, see telescope-fzf-native README for installation instructions
 			"nvim-telescope/telescope-fzf-native.nvim",
-			-- `build` is used to run some command when the plugin is installed/updated.
-			-- This is only run then, not every time Neovim starts up.
 			build = "make",
-			-- `cond` is a condition used to determine whether this plugin should be installed and loaded.
 			cond = function()
 				return vim.fn.executable("make") == 1
 			end,
 		},
-		-- Sets vim.ui.select to telescope. That means for example that neovim core stuff can fill the
-		-- telescope picker. Example would be lua vim.lsp.buf.code_action()
-		{ "nvim-telescope/telescope-ui-select.nvim" },
-		-- Browser extension for telescope.nvim. It supports synchronized creation, deletion, renaming,
-		-- and moving of files and folders powered
+
+		-- UI select with telescope
+		"nvim-telescope/telescope-ui-select.nvim",
+
+		-- File browser
 		{
 			"nvim-telescope/telescope-file-browser.nvim",
-			build = "make",
-			enabled = vim.fn.executable("make") == 1,
+			enabled = true,
+		},
+
+		-- Icons
+		"nvim-tree/nvim-web-devicons",
+	},
+
+	keys = {
+		-- Files
+		{
+			"<leader><space>",
+			"<cmd>Telescope buffers sort_mru=true sort_lastused=true<cr>",
+			desc = "Buffers",
+		},
+		{ "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+		{ "<leader>fr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
+
+		-- Search
+		{ "<leader>sg", "<cmd>Telescope live_grep<cr>", desc = "Grep" },
+		{ "<leader>sw", "<cmd>Telescope grep_string<cr>", desc = "Word" },
+		{ "<leader>sb", "<cmd>Telescope current_buffer_fuzzy_find<cr>", desc = "Buffer" },
+		{ "<leader>sc", "<cmd>Telescope command_history<cr>", desc = "Command History" },
+		{ "<leader>sh", "<cmd>Telescope help_tags<cr>", desc = "Help" },
+		{ "<leader>sk", "<cmd>Telescope keymaps<cr>", desc = "Keymaps" },
+		{ "<leader>sm", "<cmd>Telescope marks<cr>", desc = "Marks" },
+		{ "<leader>sr", "<cmd>Telescope resume<cr>", desc = "Resume" },
+
+		-- Git
+		{ "<leader>gc", "<cmd>Telescope git_commits<cr>", desc = "Commits" },
+		{ "<leader>gs", "<cmd>Telescope git_status<cr>", desc = "Status" },
+
+		-- LSP
+		{ "<leader>ss", "<cmd>Telescope lsp_document_symbols<cr>", desc = "Document Symbols" },
+		{ "<leader>sS", "<cmd>Telescope lsp_workspace_symbols<cr>", desc = "Workspace Symbols" },
+		{ "<leader>sd", "<cmd>Telescope diagnostics bufnr=0<cr>", desc = "Document Diagnostics" },
+		{ "<leader>sD", "<cmd>Telescope diagnostics<cr>", desc = "Workspace Diagnostics" },
+
+		-- File browser
+		{ "<leader>sE", "<cmd>Telescope file_browser<cr>", desc = "File Browser" },
+		{
+			"<leader>se",
+			"<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>",
+			desc = "File Browser (cwd)",
+		},
+
+		-- Config
+		{
+			"<leader>sn",
+			function()
+				require("telescope.builtin").find_files({ cwd = vim.fn.stdpath("config") })
+			end,
+			desc = "Neovim Config",
 		},
 	},
+
 	config = function()
-		-- Telescope is a fuzzy finder that comes with a lot of different things that
-		-- it can fuzzy find! It's more than just a "file finder", it can search
-		-- many different aspects of Neovim, your workspace, LSP, and more!
-		--
-		-- The easiest way to use Telescope, is to start by doing something like:
-		--  :Telescope help_tags
-		--
-		-- After running this command, a window will open up and you're able to
-		-- type in the prompt window. You'll see a list of `help_tags` options and
-		-- a corresponding preview of the help.
-		--
-		-- Two important keymaps to use while in Telescope are:
-		--  - Insert mode: <c-/>
-		--  - Normal mode: ?
-		--
-		-- This opens a window that shows you all of the keymaps for the current
-		-- Telescope picker. This is really useful to discover what Telescope can
-		-- do as well as how to actually do it!
-
-		-- [[ Configure Telescope ]]
-		-- See `:help telescope` and `:help telescope.setup()`
-
-		-- See `:help telescope.actions`
+		local telescope = require("telescope")
 		local actions = require("telescope.actions")
 
-		-- Add selection to quickfix list and open it
-		local send_selected_to_qflist = function(prompt_bufnr, mode, target)
-			actions.send_selected_to_qflist(prompt_bufnr, mode, target)
-			actions.open_qflist(0)
+		-- Custom action: send to qflist and open
+		local function send_selected_to_qflist_and_open(prompt_bufnr)
+			actions.send_selected_to_qflist(prompt_bufnr)
+			vim.cmd("copen")
 		end
 
-		require("telescope").setup({
-			-- You can put your default mappings / updates / etc. in here
-			-- All the info you're looking for is in `:help telescope.setup()`
+		telescope.setup({
 			defaults = {
-				layout_config = { prompt_position = "top", preview_cutoff = 0 },
-				prompt_prefix = "  ",
+				prompt_prefix = "   ",
 				selection_caret = "  ",
-				selection_strategy = "reset",
-				sorting_strategy = "ascending",
-				winblend = 0,
-				borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
+				entry_prefix = "  ",
+				multi_icon = " ",
+
+				-- Layout
 				layout_strategy = "horizontal",
+				layout_config = {
+					horizontal = {
+						prompt_position = "top",
+						preview_width = 0.55,
+						results_width = 0.8,
+					},
+					vertical = {
+						mirror = false,
+					},
+					width = 0.87,
+					height = 0.80,
+					preview_cutoff = 120,
+				},
+
+				-- Sorting
+				sorting_strategy = "ascending",
+				selection_strategy = "reset",
 				scroll_strategy = "cycle",
-				file_ignore_patterns = { "node_modules/.*", ".git/.*", "yarn.lock", "\\.next/.*" },
-				-- open files in the first window that is an actual file.
-				-- use the current window if no other window is available.
-				get_selection_window = function()
-					local wins = vim.api.nvim_list_wins()
-					table.insert(wins, 1, vim.api.nvim_get_current_win())
-					for _, win in ipairs(wins) do
-						local buf = vim.api.nvim_win_get_buf(win)
-						if vim.bo[buf].buftype == "" then
-							return win
-						end
-					end
-					return 0
-				end,
+
+				-- Appearance
+				winblend = 0,
+				border = true,
+				borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+				color_devicons = true,
+				set_env = { ["COLORTERM"] = "truecolor" },
+
+				-- Performance
+				file_ignore_patterns = {
+					"%.git/",
+					"node_modules/",
+					"vendor/",
+					"%.next/",
+					"dist/",
+					"build/",
+					"%.cache/",
+					"%.venv/",
+					"__pycache__/",
+					"%.pyc",
+					"%.class",
+					"%.o",
+					"%.a",
+					"%.out",
+					"%.pdf",
+					"%.mkv",
+					"%.mp4",
+					"%.zip",
+				},
+
+				-- Path display
+				path_display = { "truncate" },
+
+				-- Mappings
 				mappings = {
 					i = {
-						["<C-s>"] = actions.select_horizontal,
-						["œ"] = send_selected_to_qflist,
+						["<C-n>"] = actions.move_selection_next,
+						["<C-p>"] = actions.move_selection_previous,
+						["<C-j>"] = actions.move_selection_next,
+						["<C-k>"] = actions.move_selection_previous,
+
+						["<C-c>"] = actions.close,
+						["<Esc>"] = actions.close,
+
+						["<Down>"] = actions.move_selection_next,
+						["<Up>"] = actions.move_selection_previous,
+
+						["<CR>"] = actions.select_default,
+						["<C-x>"] = actions.select_horizontal,
+						["<C-v>"] = actions.select_vertical,
+						["<C-t>"] = actions.select_tab,
+
+						["<C-u>"] = actions.preview_scrolling_up,
+						["<C-d>"] = actions.preview_scrolling_down,
+
+						["<PageUp>"] = actions.results_scrolling_up,
+						["<PageDown>"] = actions.results_scrolling_down,
+
+						["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+						["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
+						["<C-q>"] = send_selected_to_qflist_and_open,
+						["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
+
+						["<C-l>"] = actions.complete_tag,
+						["<C-_>"] = actions.which_key, -- keys from pressing <C-/>
 					},
+
 					n = {
+						["<esc>"] = actions.close,
 						["q"] = actions.close,
-						["œ"] = send_selected_to_qflist,
+						["<CR>"] = actions.select_default,
+						["<C-x>"] = actions.select_horizontal,
+						["<C-v>"] = actions.select_vertical,
+						["<C-t>"] = actions.select_tab,
+
+						["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+						["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
+						["<C-q>"] = send_selected_to_qflist_and_open,
+						["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
+
+						["j"] = actions.move_selection_next,
+						["k"] = actions.move_selection_previous,
+						["H"] = actions.move_to_top,
+						["M"] = actions.move_to_middle,
+						["L"] = actions.move_to_bottom,
+
+						["<Down>"] = actions.move_selection_next,
+						["<Up>"] = actions.move_selection_previous,
+						["gg"] = actions.move_to_top,
+						["G"] = actions.move_to_bottom,
+
+						["<C-u>"] = actions.preview_scrolling_up,
+						["<C-d>"] = actions.preview_scrolling_down,
+
+						["<PageUp>"] = actions.results_scrolling_up,
+						["<PageDown>"] = actions.results_scrolling_down,
+
+						["?"] = actions.which_key,
 					},
+				},
+			},
+
+			-- Picker-specific settings
+			pickers = {
+				find_files = {
+					-- Use fd if available
+					find_command = { "fd", "--type", "f", "--strip-cwd-prefix" },
+					hidden = true,
+				},
+				live_grep = {
+					additional_args = function()
+						return { "--hidden" }
+					end,
+				},
+				buffers = {
+					sort_mru = true,
+					sort_lastused = true,
+					mappings = {
+						i = {
+							["<c-d>"] = actions.delete_buffer,
+						},
+						n = {
+							["dd"] = actions.delete_buffer,
+						},
+					},
+				},
+			},
+
+			-- Extensions
+			extensions = {
+				fzf = {
+					fuzzy = true,
+					override_generic_sorter = true,
+					override_file_sorter = true,
+					case_mode = "smart_case",
+				},
+				["ui-select"] = {
+					require("telescope.themes").get_dropdown({}),
+				},
+				file_browser = {
+					hijack_netrw = false,
+					hidden = true,
 				},
 			},
 		})
 
-		-- Enable Telescope extensions if they are installed
-		pcall(require("telescope").load_extension, "fzf")
-		pcall(require("telescope").load_extension, "ui-select")
-		pcall(require("telescope").load_extension, "file_browser")
-
-		-- See `:help telescope.builtin`
-		local builtin = require("telescope.builtin")
-
-		vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
-		vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
-		vim.keymap.set("n", "<leader>sf", builtin.find_files, { desc = "[S]earch [F]iles" })
-		vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
-		vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
-		vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "[S]earch by [G]rep" })
-		vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "[S]earch [D]iagnostics" })
-		vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "[S]earch [R]esume" })
-		vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-		vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "[ ] Find existing buffers" })
-		vim.keymap.set("n", "<leader>sE", ":Telescope file_browser<CR>", { desc = "[S]earch file browser" })
-		vim.keymap.set(
-			"n",
-			"<leader>se",
-			":Telescope file_browser path=%:p:h select_buffer=true<CR>",
-			{ desc = "[S]earch file browser" }
-		)
-
-		-- Slightly advanced example of overriding default behavior and theme
-		vim.keymap.set("n", "<leader>/", function()
-			-- You can pass additional configuration to Telescope to change the theme, layout, etc.
-			builtin.current_buffer_fuzzy_find()
-		end, { desc = "[/] Fuzzily search in current buffer" })
-
-		-- It's also possible to pass additional configuration options.
-		--  See `:help telescope.builtin.live_grep()` for information about particular keys
-		vim.keymap.set("n", "<leader>s/", function()
-			builtin.live_grep({
-				grep_open_files = true,
-				prompt_title = "Live Grep in Open Files",
-			})
-		end, { desc = "[S]earch [/] in Open Files" })
-
-		-- Shortcut for searching your Neovim configuration files
-		vim.keymap.set("n", "<leader>sn", function()
-			builtin.find_files({ cwd = vim.fn.stdpath("config") })
-		end, { desc = "[S]earch [N]eovim files" })
+		-- Load extensions
+		pcall(telescope.load_extension, "fzf")
+		pcall(telescope.load_extension, "ui-select")
+		pcall(telescope.load_extension, "file_browser")
 	end,
 }

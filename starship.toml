@@ -1,44 +1,333 @@
-# Use the color palette
+# ~/.config/starship.toml
+# Dracula Pro themed prompt
+
+# ============================================================================
+# General Configuration
+# ============================================================================
+format = """
+[╭─](bold cyan)\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$nodejs\
+$php\
+$golang\
+$python\
+$rust\
+$docker_context\
+$package\
+$cmd_duration
+[╰─](bold cyan)$character"""
+
+# Right prompt (opcional)
+# right_format = """$time"""
+
 palette = "dracula"
 add_newline = true
-command_timeout = 2000
+command_timeout = 1000
+scan_timeout = 30
 
-
+# ============================================================================
+# Character (el prompt principal)
+# ============================================================================
 [character]
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
-vicmd_symbol = "[❯](bold cyan)" 
+vimcmd_symbol = "[❮](bold cyan)"
+vimcmd_replace_one_symbol = "[❮](bold purple)"
+vimcmd_replace_symbol = "[❮](bold purple)"
+vimcmd_visual_symbol = "[❮](bold yellow)"
 
-[cmd_duration]
-style = "bold yellow"
-
-[directory]
-style = "bold green"
-truncation_length = 3  # Show only 2 levels of the directory
-truncation_symbol = "…/"  # Ellipsis for truncated paths
-
-[git_branch]
-style = "bold pink"
-
-[git_status]
-style = "bold red"
+# ============================================================================
+# Username & Hostname
+# ============================================================================
+[username]
+format = "[$user]($style)"
+style_user = "bold cyan"
+style_root = "bold red"
+show_always = false
+disabled = false
 
 [hostname]
+format = "[@$hostname]($style) "
 style = "bold purple"
+ssh_only = true
+disabled = false
 
-[username]
-format = "[$user]($style) on "
-style_user = "bold cyan"
+# ============================================================================
+# Directory
+# ============================================================================
+[directory]
+format = "in [$path]($style)[$read_only]($read_only_style) "
+style = "bold green"
+read_only = " 󰌾"
+read_only_style = "red"
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = "…/"
+home_symbol = "~"
 
+# Íconos especiales para directorios
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+"Desktop" = "󰚝 "
+"Projects" = "󰲋 "
+"Code" = "󰲋 "
+
+# ============================================================================
+# Git Branch
+# ============================================================================
+[git_branch]
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+symbol = " "
+style = "bold pink"
+truncation_length = 20
+truncation_symbol = "…"
+only_attached = false
+
+# ============================================================================
+# Git Status
+# ============================================================================
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold red"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?${count}"
+stashed = "${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+windows_starship = "/mnt/c/Users/username/AppData/Local/starship.exe"
+
+# ============================================================================
+# Git State (merge, rebase, etc)
+# ============================================================================
+[git_state]
+format = '[\($state( $progress_current of $progress_total)\)]($style) '
+style = "bold yellow"
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+
+# ============================================================================
+# Command Duration
+# ============================================================================
+[cmd_duration]
+min_time = 500
+format = "took [$duration]($style) "
+style = "bold yellow"
+show_milliseconds = false
+
+# ============================================================================
+# Time (opcional, en right_format)
+# ============================================================================
+[time]
+disabled = true
+format = "[$time]($style) "
+style = "bold white"
+time_format = "%T"
+utc_time_offset = "local"
+
+# ============================================================================
+# Languages
+# ============================================================================
+
+# Node.js
+[nodejs]
+format = "[$symbol($version )]($style)"
+symbol = " "
+style = "bold green"
+detect_extensions = ["js", "mjs", "cjs", "ts", "mts", "cts"]
+detect_files = ["package.json", ".node-version", ".nvmrc"]
+detect_folders = ["node_modules"]
+
+# PHP
+[php]
+format = "[$symbol($version )]($style)"
+symbol = "󰌟 "
+style = "bold purple"
+detect_extensions = ["php"]
+detect_files = ["composer.json", ".php-version"]
+detect_folders = ["vendor"]
+
+# Python
+[python]
+format = '[$symbol$pyenv_prefix($version )(\($virtualenv\) )]($style)'
+symbol = " "
+style = "bold yellow"
+pyenv_version_name = false
+pyenv_prefix = "pyenv "
+detect_extensions = ["py"]
+detect_files = [".python-version", "Pipfile", "requirements.txt", "pyproject.toml", "setup.py"]
+detect_folders = []
+
+# Go
+[golang]
+format = "[$symbol($version )]($style)"
+symbol = " "
+style = "bold cyan"
+detect_extensions = ["go"]
+detect_files = ["go.mod", "go.sum", "go.work"]
+detect_folders = []
+
+# Rust
+[rust]
+format = "[$symbol($version )]($style)"
+symbol = " "
+style = "bold red"
+detect_extensions = ["rs"]
+detect_files = ["Cargo.toml", "Cargo.lock"]
+detect_folders = []
+
+# Java
+[java]
+format = "[$symbol($version )]($style)"
+symbol = " "
+style = "bold red"
+detect_extensions = ["java", "class", "jar", "gradle", "clj", "cljc"]
+detect_files = ["pom.xml", "build.gradle.kts", "build.sbt", ".java-version"]
+detect_folders = []
+
+# ============================================================================
+# Tools & Frameworks
+# ============================================================================
+
+# Docker
+[docker_context]
+format = "[$symbol$context]($style) "
+symbol = " "
+style = "bold blue"
+only_with_files = true
+detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
+detect_folders = []
+
+# Package Version
+[package]
+format = "is [$symbol$version]($style) "
+symbol = "󰏗 "
+style = "bold yellow"
+display_private = false
+disabled = false
+
+# AWS
+[aws]
+format = 'on [$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
+symbol = "☁️  "
+style = "bold yellow"
+disabled = true
+
+# Kubernetes
+[kubernetes]
+format = 'on [$symbol$context( \($namespace\))]($style) '
+symbol = "☸ "
+style = "bold blue"
+disabled = true
+
+# Terraform
+[terraform]
+format = "[$symbol$workspace]($style) "
+symbol = "󱁢 "
+style = "bold purple"
+disabled = false
+
+# ============================================================================
+# Status & Errors
+# ============================================================================
+
+[status]
+format = "[$symbol$status]($style) "
+symbol = "✖"
+success_symbol = ""
+not_executable_symbol = "🚫"
+not_found_symbol = "🔍"
+sigint_symbol = "🧱"
+signal_symbol = "⚡"
+style = "bold red"
+map_symbol = true
+disabled = false
+
+# ============================================================================
+# Battery (para laptops)
+# ============================================================================
+[battery]
+full_symbol = "🔋"
+charging_symbol = "⚡"
+discharging_symbol = "💀"
+unknown_symbol = "❓"
+empty_symbol = "🪫"
+
+[[battery.display]]
+threshold = 10
+style = "bold red"
+
+[[battery.display]]
+threshold = 30
+style = "bold yellow"
+
+[[battery.display]]
+threshold = 100
+style = "bold green"
+
+# ============================================================================
+# Memory Usage (opcional)
+# ============================================================================
+[memory_usage]
+format = "$symbol[$ram( | $swap)]($style) "
+threshold = 75
+symbol = "🐏 "
+style = "bold dimmed white"
+disabled = false
+
+# ============================================================================
+# Jobs
+# ============================================================================
+[jobs]
+symbol = "✦"
+style = "bold blue"
+number_threshold = 1
+symbol_threshold = 1
+
+# ============================================================================
+# Shell
+# ============================================================================
+[shell]
+format = "[$indicator]($style) "
+bash_indicator = "bsh"
+fish_indicator = "fsh"
+zsh_indicator = ""
+powershell_indicator = "psh"
+disabled = true
+
+# ============================================================================
+# Dracula Pro Palette
+# ============================================================================
 [palettes.dracula]
 background = "#0B0D0F"
-current_line = "#44475a"
+current_line = "#414D58"
 foreground = "#F8F8F2"
 comment = "#708CA9"
 cyan = "#80FFEA"
 green = "#8AFF80"
 orange = "#FFCA80"
 pink = "#FF80BF"
-purple = "#FF80BF"
+purple = "#9580FF"
 red = "#FF9580"
 yellow = "#FFFF80"
+white = "#F8F8F2"
+black = "#0B0D0F"
+blue = "#9580FF"
