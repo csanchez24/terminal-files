@@ -335,6 +335,9 @@ return {
       -- PHP
       intelephense = {},
 
+      -- ASTRO
+      astro = {},
+
       -- SQL
       sqls = {
         on_attach = function(client, bufnr)
