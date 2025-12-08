@@ -129,22 +129,8 @@ return {
         file_ignore_patterns = {
           "%.git/",
           "node_modules/",
-          "vendor/",
           "%.next/",
           "dist/",
-          "build/",
-          "%.cache/",
-          "%.venv/",
-          "__pycache__/",
-          "%.pyc",
-          "%.class",
-          "%.o",
-          "%.a",
-          "%.out",
-          "%.pdf",
-          "%.mkv",
-          "%.mp4",
-          "%.zip",
         },
 
         -- Path display
@@ -222,7 +208,7 @@ return {
       pickers = {
         find_files = {
           -- Use fd if available
-          find_command = { "fd", "--type", "f", "--strip-cwd-prefix" },
+          find_command = { "fd", "--type", "f", "--hidden", "--no-ignore", "--strip-cwd-prefix" },
           hidden = true,
         },
         live_grep = {
@@ -256,12 +242,8 @@ return {
           require("telescope.themes").get_dropdown({}),
         },
         file_browser = {
-          hijack_netrw = false,
-          hidden = { file_browser = true, folder_browser = true },
-          grouped = true,
+          hidden = { file_browser = false, folder_browser = false },
           previewer = true,
-          initial_mode = "normal",
-          layout_config = { height = 40 },
           mappings = {
             ["i"] = {
               -- Crear archivo/carpeta
