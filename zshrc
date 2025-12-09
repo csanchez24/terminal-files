@@ -22,10 +22,6 @@ bindkey -v
 bindkey -rM vicmd ':'  # Deshabilitar : en vi mode
 export KEYTIMEOUT=1
 
-# Better vi mode indicators (si no usas starship para esto)
-# VIMODE_INSERT="%F{green}❯%f"
-# VIMODE_NORMAL="%F{cyan}❮%f"
-
 # ============================================================================
 # Modern CLI Tools (si los instalaste)
 # ============================================================================
@@ -220,7 +216,7 @@ if (( $+commands[phpstan] )); then
   alias pstan='phpstan analyse'
 fi
 
-# Laravel Valet (si lo usas)
+# Laravel Valet 
 if (( $+commands[valet] )); then
   alias vs='valet start'
   alias vst='valet stop'

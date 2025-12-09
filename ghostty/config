@@ -1,4 +1,23 @@
+# ~/.config/ghostty/config
+
+# Font
+font-family = "JetBrainsMono Nerd Font"
 font-size = 16
+font-thicken = true
+
+# Performance
+adjust-cell-height = -1
+adjust-cell-width = 0
+
+# Theme - Dracula Pro Van Helsing
+background = #0B0D0F
+foreground = #F8F8F2
+cursor-color = #708CA9
+cursor-text = #0B0D0F
+selection-background = #414D58
+selection-foreground = #F8F8F2
+
+# Colors (0-15)
 palette = 0=#22212C
 palette = 1=#FF9580
 palette = 2=#8AFF80
@@ -15,9 +34,20 @@ palette = 12=#AA99FF
 palette = 13=#FF99CC
 palette = 14=#99FFEE
 palette = 15=#FFFFFF
-background = #0B0D0F
-foreground = #F8F8F2
-cursor-color = #708CA9
-cursor-text = #708CA9
-selection-background = #414D58
-selection-foreground = #F8F8F2
+
+# Window
+window-padding-x = 8
+window-padding-y = 8
+window-decoration = true
+window-theme = dark
+macos-titlebar-style = tabs
+
+# Behavior
+mouse-hide-while-typing = true
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+
+# Shell integration
+shell-integration = true
+shell-integration-features = cursor,sudo,title

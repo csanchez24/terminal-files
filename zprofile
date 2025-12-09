@@ -10,7 +10,7 @@ if [[ -f "/opt/homebrew/bin/brew" ]]; then
 fi
 
 # ============================================================================
-# Pyenv initialization (si lo usas)
+# Pyenv initialization 
 # ============================================================================
 if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init --path)"
