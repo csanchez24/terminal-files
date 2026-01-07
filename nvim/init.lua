@@ -22,8 +22,8 @@ require("config.autocmds")
 -- ============================================================================
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-	vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -31,81 +31,81 @@ vim.opt.rtp:prepend(lazypath)
 -- Setup plugins
 -- ============================================================================
 require("lazy").setup({
-	spec = {
-		-- Simple plugins (no config needed)
-		"tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
-		{ "numToStr/Comment.nvim", opts = {} }, -- Better commenting (alternativa a mini.comment)
+  spec = {
+    -- Simple plugins (no config needed)
+    "tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
+    { "numToStr/Comment.nvim", opts = {} }, -- Better commenting (alternativa a mini.comment)
 
-		-- Autopairs (choose one)
-		{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
-		-- { "windwp/nvim-ts-autotag", event = "BufRead", opts = {} }, -- Ya no lo necesitas con mini.pairs
+    -- Autopairs (choose one)
+    { "windwp/nvim-autopairs", event = "InsertEnter", config = true },
+    { "windwp/nvim-ts-autotag", event = "BufRead", opts = {} },
 
-		-- Go support
-		{
-			"olexsmir/gopher.nvim",
-			ft = "go",
-			dependencies = {
-				"nvim-lua/plenary.nvim",
-				"nvim-treesitter/nvim-treesitter",
-			},
-			opts = {},
-		},
+    -- Go support
+    {
+      "olexsmir/gopher.nvim",
+      ft = "go",
+      dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-treesitter/nvim-treesitter",
+      },
+      opts = {},
+    },
 
-		-- Load all plugins from lua/plugins/
-		{ import = "plugins" },
-	},
+    -- Load all plugins from lua/plugins/
+    { import = "plugins" },
+  },
 
-	-- Lazy.nvim configuration
-	defaults = {
-		lazy = false, -- Don't lazy load by default
-		version = false, -- Use latest git commit
-	},
+  -- Lazy.nvim configuration
+  defaults = {
+    lazy = false, -- Don't lazy load by default
+    version = false, -- Use latest git commit
+  },
 
-	checker = {
-		enabled = true, -- Check for plugin updates
-		notify = false, -- Don't notify
-	},
+  checker = {
+    enabled = true, -- Check for plugin updates
+    notify = false, -- Don't notify
+  },
 
-	change_detection = {
-		enabled = true,
-		notify = false,
-	},
+  change_detection = {
+    enabled = true,
+    notify = false,
+  },
 
-	performance = {
-		cache = {
-			enabled = true,
-		},
-		rtp = {
-			-- Disable some rtp plugins
-			disabled_plugins = {
-				"gzip",
-				"matchit",
-				"matchparen",
-				"netrwPlugin",
-				"tarPlugin",
-				"tohtml",
-				"tutor",
-				"zipPlugin",
-			},
-		},
-	},
+  performance = {
+    cache = {
+      enabled = true,
+    },
+    rtp = {
+      -- Disable some rtp plugins
+      disabled_plugins = {
+        -- "gzip",
+        -- "matchit",
+        -- "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
 
-	ui = {
-		border = "rounded",
-		icons = {
-			cmd = "⌘",
-			config = "🛠",
-			event = "📅",
-			ft = "📂",
-			init = "⚙",
-			keys = "🗝",
-			plugin = "🔌",
-			runtime = "💻",
-			require = "🌙",
-			source = "📄",
-			start = "🚀",
-			task = "📌",
-			lazy = "💤 ",
-		},
-	},
+  ui = {
+    border = "rounded",
+    icons = {
+      cmd = "⌘",
+      config = "🛠",
+      event = "📅",
+      ft = "📂",
+      init = "⚙",
+      keys = "🗝",
+      plugin = "🔌",
+      runtime = "💻",
+      require = "🌙",
+      source = "📄",
+      start = "🚀",
+      task = "📌",
+      lazy = "💤 ",
+    },
+  },
 })

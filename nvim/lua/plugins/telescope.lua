@@ -242,7 +242,14 @@ return {
           require("telescope.themes").get_dropdown({}),
         },
         file_browser = {
-          hidden = { file_browser = false, folder_browser = false },
+          hidden = true,
+          hijack_netrw = false,
+          -- prompt_path = false,
+          -- path_autocomplete = false,
+          -- auto_depth = false,
+          -- respect_gitignore = false,
+          -- grouped = true,
+          -- select_buffer = false,
           previewer = true,
           mappings = {
             ["i"] = {

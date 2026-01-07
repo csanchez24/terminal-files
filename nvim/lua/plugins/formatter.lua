@@ -41,7 +41,7 @@ return {
       end
 
       return {
-        timeout_ms = 500,
+        timeout_ms = 2000,
         lsp_fallback = true,
       }
     end,
@@ -95,7 +95,8 @@ return {
       rust = { "rustfmt" },
 
       -- PHP
-      php = { "php_cs_fixer" },
+      php = { { "pint", "phpcbf" } },
+
       blade = { "blade-formatter" },
 
       -- SQL

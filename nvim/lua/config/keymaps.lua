@@ -56,10 +56,10 @@ vim.keymap.set("n", "<leader><leader>", "<cmd>e #<cr>", { desc = "Switch to alte
 -- [[ Multiple Cursors Alternative ]]
 -- Search under cursor/selection and replace one instance at a time
 vim.keymap.set(
-	"n",
-	"s*",
-	":let @/='\\<'.expand('<cword>').'\\>'<CR>cgn",
-	{ desc = "Change next occurrence under cursor" }
+  "n",
+  "s*",
+  ":let @/='\\<'.expand('<cword>').'\\>'<CR>cgn",
+  { desc = "Change next occurrence under cursor" }
 )
 vim.keymap.set("x", "s*", '"sy:let @/=@s<CR>cgn', { desc = "Change next occurrence of selection" })
 
@@ -119,10 +119,10 @@ vim.keymap.set("t", "<C-k>", "<cmd>wincmd k<cr>", { desc = "Terminal: Go to uppe
 vim.keymap.set("t", "<C-l>", "<cmd>wincmd l<cr>", { desc = "Terminal: Go to right window" })
 vim.keymap.set("t", "<C-/>", "<cmd>close<cr>", { desc = "Terminal: Hide terminal window" })
 vim.keymap.set(
-	"n",
-	"<Leader>tn",
-	":tabnew +terminal<CR>",
-	{ noremap = true, silent = true, desc = "New terminal in tab" }
+  "n",
+  "<Leader>tn",
+  ":tabnew +terminal<CR>",
+  { noremap = true, silent = true, desc = "New terminal in tab" }
 )
 vim.keymap.set("n", "<Leader>t_", ":new +terminal<CR>", { noremap = true, silent = true, desc = "New terminal below" })
 vim.keymap.set("n", "<Leader>t|", ":vnew +terminal<CR>", { noremap = true, silent = true, desc = "New terminal side" })
@@ -148,3 +148,5 @@ vim.keymap.set("n", "<C-[>", "<cmd>tabprevious<cr>", { desc = "Previous tab" })
 
 -- Java build MotiveWave
 vim.keymap.set("n", "<leader>,", ":!./gradlew mw_deploy<CR>", { desc = "Buid MotiveWave" })
+
+vim.keymap.set("n", "<leader>ts", "<cmd>set spell!<cr>", { desc = "Toggle Spell Check" })
